@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import '../Authform.css';
 
 const Register = () => {
     const [email, setEmail] = useState('');
@@ -12,15 +13,8 @@ const Register = () => {
         try {
             const response = await fetch('http://localhost:8080/auth/register', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: email,
-                    password: password,
-                    firstName,
-                    lastName
-                }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password, firstName, lastName }),
             });
 
             if (response.ok) {
@@ -37,41 +31,37 @@ const Register = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="auth-form">
             <h2>Registrera ny användare</h2>
             <input
                 type="email"
-                placeholder="Email"
+                placeholder="E-mail"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
             />
-            <br />
             <input
                 type="password"
-                placeholder="Password"
+                placeholder="Lösenord"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
             />
-            <br />
-            <button type="submit">Registrera</button>
             <input
                 type="text"
-                placeholder="First Name"
+                placeholder="Förnamn"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
             />
-            <br />
             <input
                 type="text"
-                placeholder="Last Name"
+                placeholder="Efternamn"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
             />
-            <br />
+            <button type="submit">Registrera</button>
         </form>
     );
 };
