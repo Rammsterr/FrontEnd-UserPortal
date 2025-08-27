@@ -1,6 +1,8 @@
 # 🛍️ E-commerce Integration – User Frontend
 
-Detta är en enkel React-app som fungerar som frontend till vårt **User Service**-API.
+Detta är en enkel webbapp där användare kan registrera sig, logga in och se sin profil.  
+Appen pratar med en backend-tjänst som hanterar användardata och inloggning med säkerhet via tokens.  
+Målet är att visa en tydlig inloggnings- och profilfunktion som en del av vårt större e-commerce integrationsprojekt.
 
 ## Funktioner
 - Registrera ny användare
