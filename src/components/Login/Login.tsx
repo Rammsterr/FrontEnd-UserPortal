@@ -19,6 +19,7 @@ const Login = () => {
                 const data = await response.json();
                 const token = data.accessToken;
                 localStorage.setItem('token', token);
+                window.location.reload();
                 alert('Inloggning lyckades!');
             } else {
                 alert('Fel användarnamn eller lösenord');

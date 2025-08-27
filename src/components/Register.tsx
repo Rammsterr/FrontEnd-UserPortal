@@ -18,7 +18,11 @@ const Register = () => {
             });
 
             if (response.ok) {
-                alert('Registration successful! You can now log in.');
+                const data = await response.json();
+                localStorage.setItem('token', data.token);
+
+                alert('Registrering lyckades!.');
+
             } else {
                 const errorText = await response.text();
                 console.error("BackEnd error: ", errorText);
