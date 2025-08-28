@@ -7,3 +7,40 @@ form {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: right;
 }
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-theme {
+    background: linear-gradient(135deg, #1e1e1e 0%, #2c2c2c 100%);
+    color: #e0e0e0;
+}
+
+body.dark-theme .auth-form {
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+}
+
+body.dark-theme input {
+    background-color: #3a3a3a;
+    color: #e0e0e0;
+    border-color: #555;
+}
+
+body.dark-theme .auth-form button {
+    background-color: #ffb347;
+    color: #1e1e1e;
+}
+/* Ljusare rubriker i dark mode */
+body.dark-theme .page-title {
+    color: #f4b183; /* Ljus orange-brun för rubriken */
+}
+
+body.dark-theme .welcome-text {
+    color: #ffddb3; /* Mjukare ljus ton för underrubrik */
+}
+
+body.dark-theme .auth-form h2 {
+    color: #f4b183; /* Samma som huvudrubrik för konsistens */
+}
+
