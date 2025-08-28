@@ -1,46 +1,116 @@
-form {
-    max-width: 400px;
-    margin: 50px auto;
-    padding: 2rem;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    text-align: right;
+/* ============ THEME TOKENS (blue/white + dark) ============ */
+:root {
+    /* Primary palette (light mode) */
+    --primary: #2d7ff9;            /* vivid blue */
+    --primary-hover: #1e6ae6;      /* darker blue */
+    --accent: #4fb3ff;             /* light/cyan-blue, subtle accent */
+
+    /* Base (light mode) */
+    --text: #0f172a;               /* slate-900 */
+    --card-bg: #ffffff;            /* pure white */
+    --input-border: #cbd5e1;       /* slate-300 */
+
+    /* Background gradient (light) */
+    --bg-start: #f5f9ff;           /* very pale blue */
+    --bg-end: #eaf2ff;             /* soft icy blue */
+
+    /* Dark mode tokens */
+    --dark-text: #e6f0ff;          /* near-white with a blue tint */
+    --dark-card-bg: #0f172a;       /* deep navy */
+    --dark-input-bg: #13233f;      /* dark blue */
+    --dark-input-border: #2b3b55;  /* muted blue border */
+    --dark-primary: #60a5ff;       /* bright blue for dark mode buttons */
+    --dark-primary-hover: #4f94ff; /* slightly darker */
+
+    /* Background gradient (dark) */
+    --bg-dark-start: #0b1220;
+    --bg-dark-end: #0f1b2e;
+
+    /* Decorative */
+    --wave-opacity: 0.25;
 }
+
+/* ============ PAGE LAYOUT ============ */
 body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    margin: 0;
+    min-height: 100vh;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Dark mode */
 body.dark-theme {
-    background: linear-gradient(135deg, #1e1e1e 0%, #2c2c2c 100%);
-    color: #e0e0e0;
+    background: linear-gradient(135deg, var(--bg-dark-start) 0%, var(--bg-dark-end) 100%);
+    color: var(--dark-text);
 }
 
-body.dark-theme .auth-form {
-    background-color: #2c2c2c;
-    color: #e0e0e0;
+/* Titles */
+.page-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+.welcome-text {
+    font-size: 1.1rem;
+    color: #334155; /* slate-700 */
+    text-align: center;
+    margin-bottom: 2rem;
 }
 
-body.dark-theme input {
-    background-color: #3a3a3a;
-    color: #e0e0e0;
-    border-color: #555;
+/* Dark mode title accents (pleasant contrast) */
+body.dark-theme .page-title { color: #9cc9ff; }
+body.dark-theme .welcome-text { color: #cfe5ff; }
+
+/* Theme toggle (position) */
+#theme-toggle {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    cursor: pointer;
+    color: inherit;
 }
 
-body.dark-theme .auth-form button {
-    background-color: #ffb347;
-    color: #1e1e1e;
-}
-/* Ljusare rubriker i dark mode */
-body.dark-theme .page-title {
-    color: #f4b183; /* Ljus orange-brun för rubriken */
-}
-
-body.dark-theme .welcome-text {
-    color: #ffddb3; /* Mjukare ljus ton för underrubrik */
-}
-
-body.dark-theme .auth-form h2 {
-    color: #f4b183; /* Samma som huvudrubrik för konsistens */
+/* ============ DECORATIVE BACKGROUND ============ */
+/* Top wave (blue-tinted) */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 820px;
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg"><path fill="%232d7ff9" fill-opacity="0.25" d="M0,160L30,165.3C60,171,120,181,180,181.3C240,181,300,171,360,181.3C420,192,480,224,540,218.7C600,213,660,171,720,149.3C780,128,840,128,900,160C960,192,1020,256,1080,245.3C1140,235,1200,149,1260,112C1320,75,1380,85,1410,90.7L1440,96L1440,0L1410,0C1380,0,1320,0,1260,0C1200,0,1140,0,1080,0C1020,0,960,0,900,0C840,0,780,0,720,0C660,0,600,0,540,0C480,0,420,0,360,0C300,0,240,0,180,0C120,0,60,0,30,0L0,0Z"></path></svg>') no-repeat top center;
+    background-size: cover;
+    z-index: -1;
+    opacity: var(--wave-opacity);
 }
 
+/* Soft light blob */
+body::after {
+    content: '';
+    position: fixed;
+    top: 20%;
+    left: -120px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(45,127,249,0.18) 0%, transparent 70%);
+    filter: blur(60px);
+    z-index: -2;
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 600px) {
+    body { padding: 1rem; }
+    .page-title { font-size: 1.6rem; }
+    .welcome-text { font-size: 1rem; }
+    #theme-toggle { font-size: 1.3rem; top: 0.5rem; right: 0.5rem; }
+}

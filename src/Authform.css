@@ -1,87 +1,126 @@
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #fdf6f0 0%, #ffe9dc 100%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem;
-    margin: 0;
-    min-height: 100vh;
-}
-
-/* Sidtitel */
-.page-title {
-    font-size: 2rem;
-    font-weight: 600;
-    color: #5c3d2e;
-    margin-bottom: 0.5rem;
-    text-align: center;
-}
-
-.welcome-text {
-    font-size: 1.1rem;
-    color: #6f4e37;
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-/* Formulär-box */
+/* Card container */
 .auth-form {
     width: 100%;
     max-width: 400px;
-    background-color: #fffaf6;
+    position: relative;
+    z-index: 1;
+    background-color: #ffffff; /* toned down from blue → clean white */
     padding: 2rem;
     margin: 1rem 0;
     border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    overflow: hidden;
+    text-align: left;
 }
 
-/* Rubrik */
+/* Gradient border (blue accent) */
+.auth-form::before {
+    content: '';
+    position: absolute;
+    top: -2px; left: -2px; right: -2px; bottom: -2px;
+    z-index: -1;
+    background: linear-gradient(135deg, var(--accent), var(--primary));
+    border-radius: 14px;
+}
+
+/* Headings */
 .auth-form h2 {
-    text-align: left;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #5c3d2e;
+    color: #1e3a8a; /* dark blue, ensures readability */
     margin: 0 0 0.5rem 0;
     padding-left: 0.25rem;
 }
 
-/* Fält */
+/* Inputs */
 .auth-form input {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #d8bfa2;
+    border: 1px solid var(--input-border);
     border-radius: 6px;
     font-size: 1rem;
-    background-color: #fffaf6;
-    transition: border-color 0.2s ease;
+    background-color: var(--card-bg);
+    color: inherit;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
-
 .auth-form input:focus {
-    border-color: #f4a261;
+    border-color: var(--primary);
     outline: none;
+    box-shadow: 0 0 0 4px rgba(45, 127, 249, 0.15);
 }
 
-/* Knappar */
-.auth-form button {
+/* Buttons (primary by default inside forms) */
+.auth-form button,
+.btn-primary {
     padding: 0.75rem;
     font-size: 1rem;
-    background-color: #f4a261;
-    color: white;
+    background-color: var(--primary);
+    color: #ffffff;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+.auth-form button:hover,
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(2, 6, 23, 0.15);
+}
+.auth-form button:active,
+.btn-primary:active { transform: scale(0.98); }
+
+/* Secondary button (optional variant) */
+.btn-secondary {
+    background-color: #3b82f6;  /* brand-consistent blue */
+    color: #ffffff;
+}
+.btn-secondary:hover { background-color: #2f6fe0; }
+
+/* Dark mode overrides */
+body.dark-theme .auth-form {
+    background-color: var(--dark-card-bg);
+    color: var(--dark-text);
+    box-shadow: 0 10px 28px rgba(2, 6, 23, 0.5);
+}
+body.dark-theme .auth-form h2 { color: #9cc9ff; }
+
+body.dark-theme .auth-form input {
+    background-color: var(--dark-input-bg);
+    color: var(--dark-text);
+    border-color: var(--dark-input-border);
+}
+body.dark-theme .auth-form input::placeholder { color: #9fb4d1; }
+
+/* Primary buttons in dark theme: brighter blue, dark text for contrast */
+body.dark-theme .auth-form button,
+body.dark-theme .btn-primary {
+    background-color: var(--dark-primary);
+    color: #0b1220; /* deep navy text for strong contrast on bright blue */
+}
+body.dark-theme .auth-form button:hover,
+body.dark-theme .btn-primary:hover {
+    background-color: var(--dark-primary-hover);
 }
 
-.auth-form button:hover {
-    background-color: #e07a5f;
-    transform: translateY(-1px);
+/* Secondary in dark mode (keeps high contrast) */
+body.dark-theme .btn-secondary {
+    background-color: #7cc2ff;
+    color: #0b1220;
 }
+body.dark-theme .btn-secondary:hover { background-color: #69b7ff; }
 
-.auth-form button:active {
-    transform: scale(0.98);
+/* Responsive tweaks */
+@media (max-width: 600px) {
+    .auth-form {
+        padding: 1.5rem;
+        margin: 0.5rem 0;
+    }
+    .auth-form input,
+    .auth-form button {
+        font-size: 1rem;
+    }
 }
