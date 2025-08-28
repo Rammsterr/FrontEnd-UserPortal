@@ -8,6 +8,7 @@ Målet är att visa en tydlig inloggnings- och profilfunktion som en del av vår
 - Registrera ny användare
 - Logga in och spara JWT-token i `localStorage`
 - Visa användarprofil via `/me`-endpoint (med token för autentisering)
+- Ändra sitt förnamn och efternamn
 - Logga ut och rensa token
 - Enkel UX som visar olika vyer beroende på om användaren är inloggad eller inte
 
