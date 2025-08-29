@@ -1,33 +1,33 @@
-/* ============ THEME TOKENS (blue/white + dark) ============ */
+/* ============ THEME TOKENS (Light: 80's Retro Wave | Dark: Neon) ============ */
 :root {
-    /* Primary palette (light mode) */
-    --primary: #2d7ff9;            /* vivid blue */
-    --primary-hover: #1e6ae6;      /* darker blue */
-    --accent: #4fb3ff;             /* light/cyan-blue, subtle accent */
+    /* Primary palette (light mode - 80's retro wave) */
+    --primary: #00a6c8;            /* saturated teal/cyan (less pastel) */
+    --primary-hover: #008faf;      /* deeper teal hover */
+    --accent: #ff2d95;             /* hot magenta (reduced pastel) */
 
     /* Base (light mode) */
-    --text: #0f172a;               /* slate-900 */
-    --card-bg: #ffffff;            /* pure white */
-    --input-border: #cbd5e1;       /* slate-300 */
+    --text: #0a0f2d;               /* deep inky navy for readability */
+    --card-bg: rgba(248, 249, 255, 0.78); /* cool light glass with slight indigo */
+    --input-border: #9ed7e6;       /* cool cyan border, less sugary */
 
-    /* Background gradient (light) */
-    --bg-start: #f5f9ff;           /* very pale blue */
-    --bg-end: #eaf2ff;             /* soft icy blue */
+    /* Background (light) */
+    --bg-start: #f5f7ff;           /* cool very light */
+    --bg-end: #ecf2ff;             /* pale periwinkle */
 
     /* Dark mode tokens */
-    --dark-text: #e6f0ff;          /* near-white with a blue tint */
-    --dark-card-bg: #0f172a;       /* deep navy */
-    --dark-input-bg: #13233f;      /* dark blue */
-    --dark-input-border: #2b3b55;  /* muted blue border */
-    --dark-primary: #60a5ff;       /* bright blue for dark mode buttons */
-    --dark-primary-hover: #4f94ff; /* slightly darker */
+    --dark-text: #e6faff;          /* cool near-white */
+    --dark-card-bg: rgba(18, 18, 32, 0.75); /* glassy dark panel */
+    --dark-input-bg: rgba(10, 10, 22, 0.6);
+    --dark-input-border: #3c4b6e;  /* muted neon-blue border */
+    --dark-primary: #00e5ff;       /* bright cyan on dark */
+    --dark-primary-hover: #00b3d6; /* darker hover */
 
-    /* Background gradient (dark) */
-    --bg-dark-start: #0b1220;
-    --bg-dark-end: #0f1b2e;
+    /* Background (dark) */
+    --bg-dark-start: #070812;      /* near-black indigo */
+    --bg-dark-end: #0f1023;        /* midnight violet */
 
     /* Decorative */
-    --wave-opacity: 0.25;
+    --wave-opacity: 0.24;
 }
 
 /* ============ PAGE LAYOUT ============ */
@@ -35,13 +35,36 @@ body {
     font-family: 'Segoe UI', sans-serif;
     background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
     color: var(--text);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     padding: 2rem;
     margin: 0;
     min-height: 100vh;
+    min-height: 100dvh; /* modern viewport unit to avoid iOS URL bar issues */
     transition: background-color 0.3s ease, color 0.3s ease;
+    /* Avoid iOS Safari/Chrome jank: background-attachment: fixed causes issues */
+    background-attachment: scroll;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow-x: hidden;
+}
+
+/* Constrain content width and center it responsively */
+.container {
+    width: 100%;
+    max-width: 980px;
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+}
+
+/* Ensure forms align symmetrically in the main view */
+.auth-form {
+    margin-left: auto;
+    margin-right: auto;
+}
+.auth-form h2 {
+    text-align: center; /* centers headings above fields for symmetric appearance */
 }
 
 /* Dark mode */
@@ -52,65 +75,181 @@ body.dark-theme {
 
 /* Titles */
 .page-title {
-    font-size: 2rem;
-    font-weight: 600;
-    color: var(--text);
+    /* Fluid typography for better scaling across devices */
+    font-size: clamp(1.6rem, 2.2vw + 0.8rem, 2.3rem);
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    color: #0a0f2d; /* deep inky navy on light */
+    text-shadow: 0 2px 10px rgba(0, 166, 200, 0.18);
     margin-bottom: 0.5rem;
     text-align: center;
 }
 .welcome-text {
-    font-size: 1.1rem;
-    color: #334155; /* slate-700 */
+    font-size: clamp(1rem, 1.2vw + 0.6rem, 1.15rem);
+    color: #2b3a66; /* cooler slate */
     text-align: center;
     margin-bottom: 2rem;
 }
 
-/* Dark mode title accents (pleasant contrast) */
-body.dark-theme .page-title { color: #9cc9ff; }
-body.dark-theme .welcome-text { color: #cfe5ff; }
+/* Dark mode title accents (neon glow) */
+body.dark-theme .page-title { color: #e6faff; text-shadow: 0 0 14px rgba(0,229,255,0.6), 0 0 36px rgba(255,62,165,0.4); }
+body.dark-theme .welcome-text { color: #c7e0ff; }
 
 /* Theme toggle (position) */
 #theme-toggle {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: none;
-    border: none;
-    font-size: 1.6rem;
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 1rem);
+    right: calc(env(safe-area-inset-right, 0px) + 1rem);
+    background: linear-gradient(135deg, rgba(255,255,255,0.6), rgba(255,255,255,0.4));
+    border: 1px solid rgba(0,0,0,0.06);
+    font-size: 1.2rem;
     cursor: pointer;
-    color: inherit;
+    color: #0d1220;
+    border-radius: 999px;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 26px rgba(2, 6, 23, 0.12), 0 0 0 2px rgba(255,255,255,0.3) inset;
+    backdrop-filter: blur(10px) saturate(160%);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    z-index: 1000;
+}
+#theme-toggle:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0, 229, 255, 0.35), 0 0 0 2px rgba(255,62,165,0.25) inset; }
+#theme-toggle:active { transform: scale(0.96); }
+body.dark-theme #theme-toggle {
+    background: linear-gradient(135deg, rgba(0,229,255,0.18), rgba(255,62,165,0.18));
+    color: var(--dark-text);
+    border-color: rgba(0,229,255,0.35);
+    box-shadow: 0 8px 26px rgba(0, 229, 255, 0.25), 0 0 0 2px rgba(255,62,165,0.15) inset;
 }
 
 /* ============ DECORATIVE BACKGROUND ============ */
-/* Top wave (blue-tinted) */
+@keyframes waveFloat {
+    0% { background-position: 50% 0; }
+    50% { background-position: 52% 2px; }
+    100% { background-position: 50% 0; }
+}
+/* Top waves (light mode: 80's retro wave neon lines) */
 body::before {
     content: "";
     position: fixed;
     inset: 0 0 auto 0;
-    height: 820px;
-    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg"><path fill="%232d7ff9" fill-opacity="0.25" d="M0,160L30,165.3C60,171,120,181,180,181.3C240,181,300,171,360,181.3C420,192,480,224,540,218.7C600,213,660,171,720,149.3C780,128,840,128,900,160C960,192,1020,256,1080,245.3C1140,235,1200,149,1260,112C1320,75,1380,85,1410,90.7L1440,96L1440,0L1410,0C1380,0,1320,0,1260,0C1200,0,1140,0,1080,0C1020,0,960,0,900,0C840,0,780,0,720,0C660,0,600,0,540,0C480,0,420,0,360,0C300,0,240,0,180,0C120,0,60,0,30,0L0,0Z"></path></svg>') no-repeat top center;
-    background-size: cover;
+    height: max(60vh, 680px);
+    /* Stack multiple neon stroke waves (teal/magenta/indigo) */
+    background-image:
+      url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg1" x1="0" x2="1"><stop offset="0%" stop-color="%2300a6c8"/><stop offset="100%" stop-color="%23ff2d95"/></linearGradient></defs><path d="M0,160 C180,120 360,220 540,200 C720,180 900,120 1080,160 C1260,200 1440,180 1440,180" fill="none" stroke="url(%23lg1)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.65"/></svg>'),
+      url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg2" x1="0" x2="1"><stop offset="0%" stop-color="%23008faf"/><stop offset="100%" stop-color="%238a2be2"/></linearGradient></defs><path d="M0,190 C200,230 380,170 560,200 C740,230 960,260 1140,220 C1320,180 1440,200 1440,200" fill="none" stroke="url(%23lg2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.55"/></svg>'),
+      url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lg3" x1="0" x2="1"><stop offset="0%" stop-color="%23ff2d95"/><stop offset="100%" stop-color="%2300a6c8"/></linearGradient></defs><path d="M0,140 C220,100 420,140 640,160 C860,180 1120,140 1300,160 C1380,168 1440,172 1440,172" fill="none" stroke="url(%23lg3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/></svg>');
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-position: top center, 12% 88px, right 6% top 150px;
+    background-size: cover, 120% auto, 110% auto;
     z-index: -1;
-    opacity: var(--wave-opacity);
+    opacity: 1;
+    animation: waveFloat 18s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px rgba(0,166,200,0.25)) drop-shadow(0 0 14px rgba(255,45,149,0.18));
 }
 
-/* Soft light blob */
+/* Dark mode waves and glow */
+body.dark-theme::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: max(62vh, 700px);
+    /* Stack multiple neon line waves (cyan/magenta) */
+    background-image:
+      url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="s1" x1="0" x2="1"><stop offset="0%" stop-color="%2300e5ff"/><stop offset="100%" stop-color="%23ff3ea5"/></linearGradient></defs><path d="M0,160 C180,120 360,220 540,200 C720,180 900,120 1080,160 C1260,200 1440,180 1440,180" fill="none" stroke="url(%23s1)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/></svg>'),
+      url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="s2" x1="0" x2="1"><stop offset="0%" stop-color="%2300e5ff"/><stop offset="100%" stop-color="%23ff3ea5"/></linearGradient></defs><path d="M0,190 C200,230 380,170 560,200 C740,230 960,260 1140,220 C1320,180 1440,200 1440,200" fill="none" stroke="url(%23s2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/></svg>'),
+      url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="s3" x1="0" x2="1"><stop offset="0%" stop-color="%2300e5ff"/><stop offset="100%" stop-color="%23ff3ea5"/></linearGradient></defs><path d="M0,140 C220,100 420,140 640,160 C860,180 1120,140 1300,160 C1380,168 1440,172 1440,172" fill="none" stroke="url(%23s3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/></svg>');
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-position: top center, 10% 80px, right 5% top 140px;
+    background-size: cover, 120% auto, 110% auto;
+    z-index: -1;
+    opacity: 1;
+    animation: waveFloat 18s ease-in-out infinite;
+    filter: drop-shadow(0 0 12px rgba(0,229,255,0.35)) drop-shadow(0 0 24px rgba(255,62,165,0.25));
+}
+
+/* Ambient glow (light: pastel cyan) */
+@keyframes glowPulse {
+    0% { transform: translateY(0) scale(1); opacity: 0.9; }
+    50% { transform: translateY(-6px) scale(1.06); opacity: 1; }
+    100% { transform: translateY(0) scale(1); opacity: 0.9; }
+}
 body::after {
     content: '';
     position: fixed;
-    top: 20%;
+    top: 12%;
     left: -120px;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(45,127,249,0.18) 0%, transparent 70%);
-    filter: blur(60px);
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, rgba(0,188,212,0.22) 0%, transparent 70%);
+    filter: blur(70px);
     z-index: -2;
+    animation: glowPulse 12s ease-in-out infinite;
+}
+
+/* Dark mode glow */
+body.dark-theme::after {
+    content: '';
+    position: fixed;
+    top: 20%;
+    right: -140px;
+    width: 460px;
+    height: 460px;
+    background: radial-gradient(circle, rgba(255,62,165,0.22) 0%, transparent 70%);
+    filter: blur(90px);
+    z-index: -2;
+    animation: glowPulse 14s ease-in-out infinite;
 }
 
 /* ============ RESPONSIVE ============ */
+@media (max-width: 900px) {
+    /* Tablet tweaks: reduce outer padding slightly and scale headings */
+    body { padding: 1.5rem; }
+    .page-title { font-size: 1.8rem; }
+    .welcome-text { font-size: 1.05rem; }
+    /* Keep toggle within safe area but bring slightly closer on medium screens */
+    #theme-toggle {
+        top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+        right: calc(env(safe-area-inset-right, 0px) + 0.75rem);
+    }
+    /* Ensure decorative backgrounds don't overflow on tablets */
+    body::before { background-size: cover, 115% auto, 108% auto; background-position: top center, 10% 84px, right 6% top 140px; }
+    body.dark-theme::before { background-size: cover, 115% auto, 108% auto; background-position: top center, 9% 78px, right 5% top 132px; }
+}
+
 @media (max-width: 600px) {
     body { padding: 1rem; }
-    .page-title { font-size: 1.6rem; }
-    .welcome-text { font-size: 1rem; }
-    #theme-toggle { font-size: 1.3rem; top: 0.5rem; right: 0.5rem; }
+    .container { gap: 1.25rem; }
+    .page-title { font-size: 1.65rem; }
+    .welcome-text { font-size: 1.05rem; }
+    #theme-toggle {
+        font-size: 1.3rem;
+        top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
+        right: calc(env(safe-area-inset-right, 0px) + 0.5rem);
+    }
+    /* Improve gradient/waves scaling on small screens */
+    body::before { background-size: cover, 130% auto, 120% auto; background-position: top center, 8% 76px, right 6% top 128px; }
+    body.dark-theme::before { background-size: cover, 130% auto, 120% auto; background-position: top center, 7% 70px, right 5% top 120px; }
+    /* On small phones, slightly reduce glow dimensions to avoid overflow */
+    body::after { width: 300px; height: 300px; left: -110px; }
+    body.dark-theme::after { width: 360px; height: 360px; right: -130px; }
+}
+
+/* ============ GLOBAL RESPONSIVE MEDIA & ACCESSIBILITY ============ */
+img, picture, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Enable clear focus rings for keyboard/touch accessibility */
+#theme-toggle:focus-visible,
+.auth-form button:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(0, 166, 200, 0.3), 0 0 0 6px rgba(255, 45, 149, 0.2);
 }

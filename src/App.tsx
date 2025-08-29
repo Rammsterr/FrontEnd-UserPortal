@@ -10,7 +10,7 @@ function App() {
     const token = localStorage.getItem("token");
 
     return (
-        <div>
+        <main className="container">
             <ThemeToggle />
             <h1 className="page-title">🛍️ E-commerce Integration</h1>
 
@@ -18,6 +18,7 @@ function App() {
                 <>
                     <UserProfile />
                     <button
+                        className="btn-primary btn-inline"
                         style={{ marginTop: '1rem' }}
                         onClick={() => {
                             localStorage.removeItem("token");
@@ -34,7 +35,7 @@ function App() {
                     <Register />
                 </>
             )}
-        </div>
+        </main>
     );
 }
 

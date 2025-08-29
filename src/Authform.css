@@ -1,84 +1,128 @@
 /* Card container */
 .auth-form {
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
     position: relative;
     z-index: 1;
-    background-color: #ffffff; /* toned down from blue → clean white */
+    background-color: var(--card-bg);
     padding: 2rem;
-    margin: 1rem 0;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+    margin: 1.25rem 0;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
     display: flex;
     flex-direction: column;
     gap: 1rem;
     overflow: hidden;
     text-align: left;
+    backdrop-filter: saturate(120%) blur(6px);
+    -webkit-backdrop-filter: saturate(120%) blur(6px);
+    transform: translateZ(0);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Gradient border (blue accent) */
+/* Gradient border (neon accent) */
 .auth-form::before {
     content: '';
     position: absolute;
     top: -2px; left: -2px; right: -2px; bottom: -2px;
     z-index: -1;
     background: linear-gradient(135deg, var(--accent), var(--primary));
-    border-radius: 14px;
+    border-radius: 18px;
+    opacity: 0.95;
+    box-shadow: 0 0 24px rgba(0,245,212,0.25), 0 0 48px rgba(255,62,165,0.18);
 }
 
 /* Headings */
 .auth-form h2 {
     font-size: 1.25rem;
-    font-weight: 600;
-    color: #1e3a8a; /* dark blue, ensures readability */
+    font-weight: 700;
+    color: var(--text);
     margin: 0 0 0.5rem 0;
     padding-left: 0.25rem;
 }
+/* Labels */
+.auth-form label {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0.25rem 0 0.25rem 0.1rem;
+}
 
-/* Inputs */
+/* Inputs: perfectly symmetric look */
 .auth-form input {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.75rem 0.9rem;
     border: 1px solid var(--input-border);
-    border-radius: 6px;
+    border-radius: 10px;
     font-size: 1rem;
+    min-height: 44px; /* touch-friendly tap target */
     background-color: var(--card-bg);
     color: inherit;
-    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    box-sizing: border-box; /* ensure padding/border don't break equal widths */
 }
+.auth-form input:hover { transform: translateY(-1px); }
 .auth-form input:focus {
     border-color: var(--primary);
     outline: none;
-    box-shadow: 0 0 0 4px rgba(45, 127, 249, 0.15);
+    box-shadow: 0 0 0 4px rgba(0, 245, 212, 0.25), 0 0 18px rgba(255, 62, 165, 0.25);
 }
+/* Align placeholder text to consistent color/opacity for symmetry */
+.auth-form input::placeholder { color: rgba(0,0,0,0.5); }
+body.dark-theme .auth-form input::placeholder { color: #9e9e9e; }
 
 /* Buttons (primary by default inside forms) */
 .auth-form button,
 .btn-primary {
-    padding: 0.75rem;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.75rem 0.9rem;
     font-size: 1rem;
-    background-color: var(--primary);
+    min-height: 44px; /* touch-friendly tap target */
+    background: linear-gradient(180deg, var(--primary) 0%, var(--primary-hover) 100%);
     color: #ffffff;
     border: none;
-    border-radius: 6px;
+    border-radius: 10px; /* match input radius for symmetry */
     cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+/* Utility: make a primary button size to its content instead of full width */
+.btn-inline {
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 1rem; /* a bit wider tap target */
 }
 .auth-form button:hover,
 .btn-primary:hover {
     background-color: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(2, 6, 23, 0.15);
+    box-shadow: 0 8px 18px rgba(0, 229, 255, 0.28), 0 0 0 2px rgba(255,62,165,0.2) inset;
+}
+.auth-form button:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(0, 166, 200, 0.3), 0 0 0 6px rgba(255, 45, 149, 0.2);
 }
 .auth-form button:active,
 .btn-primary:active { transform: scale(0.98); }
 
+/* Card hover lift */
+.auth-form:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px rgba(2, 6, 23, 0.18);
+}
+
 /* Secondary button (optional variant) */
 .btn-secondary {
-    background-color: #3b82f6;  /* brand-consistent blue */
-    color: #ffffff;
+    background-color: var(--accent);
+    color: #0b1020; /* dark inky text on neon magenta */
+    min-height: 44px; /* ensure logout and other secondary buttons are touch-friendly */
 }
-.btn-secondary:hover { background-color: #2f6fe0; }
+.btn-secondary:hover { background-color: #ff6db8; }
 
 /* Dark mode overrides */
 body.dark-theme .auth-form {
@@ -86,41 +130,51 @@ body.dark-theme .auth-form {
     color: var(--dark-text);
     box-shadow: 0 10px 28px rgba(2, 6, 23, 0.5);
 }
-body.dark-theme .auth-form h2 { color: #9cc9ff; }
+body.dark-theme .auth-form h2 { color: #ffffff; }
 
 body.dark-theme .auth-form input {
     background-color: var(--dark-input-bg);
     color: var(--dark-text);
     border-color: var(--dark-input-border);
 }
-body.dark-theme .auth-form input::placeholder { color: #9fb4d1; }
+body.dark-theme .auth-form input::placeholder { color: #9e9e9e; }
 
-/* Primary buttons in dark theme: brighter blue, dark text for contrast */
+/* Primary buttons in dark theme: neon cyan gradient with white text */
 body.dark-theme .auth-form button,
 body.dark-theme .btn-primary {
-    background-color: var(--dark-primary);
-    color: #0b1220; /* deep navy text for strong contrast on bright blue */
+    background: linear-gradient(180deg, var(--dark-primary) 0%, var(--dark-primary-hover) 100%);
+    color: #ffffff;
 }
 body.dark-theme .auth-form button:hover,
 body.dark-theme .btn-primary:hover {
-    background-color: var(--dark-primary-hover);
+    filter: brightness(1.06);
 }
 
-/* Secondary in dark mode (keeps high contrast) */
+/* Secondary in dark mode: neon magenta variant */
 body.dark-theme .btn-secondary {
-    background-color: #7cc2ff;
-    color: #0b1220;
+    background-color: #ff3ea5;
+    color: #0b1020;
 }
-body.dark-theme .btn-secondary:hover { background-color: #69b7ff; }
+body.dark-theme .btn-secondary:hover { background-color: #ff5ab2; }
 
 /* Responsive tweaks */
+@media (max-width: 900px) {
+    .auth-form {
+        max-width: 520px; /* allow a bit wider on tablets but still centered */
+        padding: 1.75rem;
+        margin: 1rem 0;
+    }
+}
 @media (max-width: 600px) {
     .auth-form {
-        padding: 1.5rem;
+        max-width: 100%;
+        padding: 1.25rem 1rem;
         margin: 0.5rem 0;
     }
+    .auth-form h2 { font-size: 1.15rem; }
+    .auth-form label { font-size: 0.98rem; }
     .auth-form input,
     .auth-form button {
-        font-size: 1rem;
+        font-size: 1.05rem;
     }
 }
