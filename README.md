@@ -1,68 +1,94 @@
-# 🛍️ E-commerce Integration – User Frontend
+# 🛍️ User Portal – React‑frontend
 
-Detta är en enkel webbapp där användare kan registrera sig, logga in och se sin profil.
-Appen pratar med en backend-tjänst som hanterar användardata och inloggning med säkerhet via tokens.
-Målet är att visa en tydlig inloggnings- och profilfunktion som en del av vårt större e-commerce integrationsprojekt.
+Detta är en React‑app för användarportal med registrering, inloggning och profilvy. Appen använder JWT‑token som lagras i `localStorage` och HashRouter för enkel hosting (t.ex. GitHub Pages/Blob Static Website). Det finns även förberedda sidor för en framtida produktkatalog.
 
-## Funktioner
-- Registrera ny användare
-- Logga in och spara JWT-token i `localStorage`
-- Visa användarprofil via `/me`-endpoint (med token för autentisering)
-- Ändra sitt förnamn och efternamn
-- Logga ut och rensa token
-- Enkel UX som visar olika vyer beroende på om användaren är inloggad eller inte
-- Förberedda produktvyer och API-stubs för kommande Product Service-integration
+## Innehåll
+- Översikt och funktioner
+- Tekniker
+- Kom igång (installation och start)
+- Miljövariabler och API‑endpoints
+- Routing
+- Produktfunktioner (förberedda)
+- Tillgänglighet och UX
+- Scripts
+- Projektstruktur
 
-## Teknisk översikt
-- Byggd i **React (Create React App)**
-- **React Router** (hash-baserad) för navigering mellan sidor
-- Kommunikation med backend via **REST API**
-- Token-baserad autentisering (JWT)
-- Enkelt forms UI med CSS-styling
+## Översikt och funktioner
+- Skapa konto (registrering)
+- Logga in och spara JWT i `localStorage`
+- Visa användarprofil när token finns
+- Logga ut med rensning av token
+- Växling mellan login/registrering via komponenten `AuthSwitch`
+- Header med snabblänk till inloggning samt temaväxling
+- Förberedda produktvyer (lista, detaljer, admin‑form)
+
+## Tekniker
+- React (Create React App)
+- react‑router‑dom v6 med HashRouter
+- TypeScript
+- Enkel CSS (App.css, Authform.css)
 
 ## Kom igång
-1. Installera dependencies:
+1. Installera beroenden:
    ```bash
    npm install
    ```
-2. Starta dev-server:
+2. Starta utvecklingsserver:
    ```bash
    npm start
    ```
-3. Öppna appen på http://localhost:3000
+3. Öppna http://localhost:3000
 
-> OBS: Rollen (admin/user) hämtas ev. från backend men visas inte i UI enligt säkerhetskrav. Se kommentar i `src/components/UserProfile.tsx`.
+## Miljövariabler och API‑endpoints
+Användartjänst (User Service):
+- Login: `POST http://localhost:8080/auth/login` (se `src/components/Login/Login.tsx`)
+- Appen förväntar sig `accessToken` i svaret och lagrar den i `localStorage` som `token`.
+- Profilendpoints konsumeras från `UserProfile` (se komponenten) och använder token i Authorization‑header.
 
-## Backend
+Produktjänst (förberedd):
+- Bas‑URL (om/när den används): `REACT_APP_PRODUCT_API_BASE_URL` (t.ex. `http://localhost:8081`)
 
-Frontend pratar med ett separat Spring Boot User Service som hanterar:
-- Registrering
-- Login
-- Token-verifiering
-- Profilendpoint `/me`
+## Routing
+All routing sker med HashRouter.
+- `#/` –
+  - Inloggad: visar `UserProfile` och en "Logga ut"‑knapp
+  - Utloggad: visar `AuthSwitch` som låter dig växla mellan Registrering och Login
+- `#/products` – produktlista
+- `#/products/:id` – produktdetaljer
+- `#/admin/products/new` – formulär för ny produkt (framtida adminflöde)
 
-### Product Service (förberett)
-- Produkter ligger under `src/features/products/`
-  - `ProductList.tsx` – lista
-  - `ProductDetails.tsx` – detaljer
-  - `ProductForm.tsx` – skapa/redigera (admin framöver)
-  - `ProductSearch.tsx` – sök
-  - `ProductInventory.tsx` – lagerstatus
-  - `ProductImageUpload.tsx` – grund för bilduppladdning
-  - `productService.ts` – API-stubs (REST)
-- Routes (hash):
-  - `#/products` – lista
-  - `#/products/:id` – detaljer
-  - `#/admin/products/new` – ny produkt
-- Konfigurationsmiljö:
-  - Sätt `REACT_APP_PRODUCT_API_BASE_URL` för att peka mot Product Service (default `http://localhost:8081`).
-  - Swagger UI kommer senare vara tillgänglig på: `${REACT_APP_PRODUCT_API_BASE_URL}/swagger-ui/index.html`.
+Se `src/App.tsx` och `src/components/Header.tsx` för navigationslogik.
 
-## CI/CD och Azure (framtid)
-- CI/CD: Lägg till pipeline (GitHub Actions/Azure DevOps) som kör `npm ci && npm run build` och publicerar `build/`.
-- Azure Blob Storage: Används för lagring av produktbilder. `ProductImageUpload` kan senare bytas till SAS URL uppladdning eller API-proxy.
-- Azure SQL Database: Hanteras i Product Service (Spring Boot + JPA). Frontend använder endast REST-API.
+## Produktfunktioner (förberedda)
+Koden finns under `src/features/products/`:
+- ProductList.tsx – lista
+- ProductDetails.tsx – detaljer
+- ProductForm.tsx – skapa/redigera (admin framöver)
+- ProductSearch.tsx – sök (stub)
+- ProductInventory.tsx – lager (stub)
+- ProductImageUpload.tsx – bilduppladdning (stub)
+- productService.ts – API‑stubs (REST)
 
-## Utvecklartips
-- Ändringar i routing gjordes i `src/App.tsx` med `react-router-dom` (hash router för enkel hosting).
-- API-stubs i `productService.ts` är avsiktligt tomma tills backend finns.
+## Tillgänglighet och UX
+- Landmärken: `<main role="main">` och semantisk header/footer
+- Tydlig knapp för "Logga ut" som endast visas när token finns
+- Textfeedback vid autentiseringsflöden
+- Tema‑växling via `ThemeToggle` (i Header)
+
+## Scripts
+- `npm start` – startar dev‑server
+- `npm run build` – bygger produktion
+- `npm test` – startar testkörning (CRA standard)
+
+## Projektstruktur (utdrag)
+- `src/App.tsx` – appens rot, routes och villkorad vy baserat på token
+- `src/components/Header.tsx` – titel, navigation, login/logga‑ut och tema
+- `src/components/AuthSwitch.tsx` – växlar mellan Login och Register
+- `src/components/Login/Login.tsx` – loginflöde mot `/auth/login`
+- `src/components/Register.tsx` – registreringsflöde
+- `src/components/UserProfile.tsx` – profilvy för inloggad användare
+- `src/features/products/*` – produktrelaterade sidor (förberedda)
+
+## Notiser
+- Rollen (admin/user) kan komma från backend men exponeras inte nödvändigtvis i UI.
+- HashRouter används för att undvika serverkonfiguration vid statisk hosting.
