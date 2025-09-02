@@ -4,11 +4,18 @@ import '../Authform.css';
 const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Client-side check: require confirm password to match
+        if (password !== confirmPassword) {
+            alert('Lösenorden matchar inte. Vänligen fyll i samma lösenord i båda fälten.');
+            return;
+        }
 
         try {
             const response = await fetch('http://localhost:8080/auth/register', {
@@ -18,10 +25,22 @@ const Register = () => {
             });
 
             if (response.ok) {
-                const data = await response.json();
-                localStorage.setItem('token', data.token);
+                // Registration succeeded. Do not keep any token here; direct the user to the Login form.
+                try {
+                    const data = await response.json();
+                    // Some backends may return a token here, but our UX requires login afterwards.
+                    // Ensure we are logged out and show the Login view.
+                    if (data && data.token) {
+                        // Clear any token that might have been returned at registration time.
+                        localStorage.removeItem('token');
+                    }
+                } catch {}
 
-                alert('Registrering lyckades!.');
+                alert('Registrering lyckades! Du kan nu logga in.');
+
+                // Navigate to home and ask AuthSwitch to show the Login form
+                window.location.hash = '/';
+                window.dispatchEvent(new Event('show-login'));
 
             } else {
                 const errorText = await response.text();
@@ -49,6 +68,13 @@ const Register = () => {
                 placeholder="Lösenord"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
+            />
+            <input
+                type="password"
+                placeholder="Upprepa lösenord"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
             />
             <input

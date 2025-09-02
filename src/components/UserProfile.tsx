@@ -121,7 +121,9 @@ const UserProfile: React.FC = () => {
                         <p><strong>Förnamn:</strong> {user.firstName}</p>
                         <p><strong>Efternamn:</strong> {user.lastName}</p>
                         <p><strong>Email:</strong> {user.email}</p>
-                        {user.role && <p><strong>Roll:</strong> {user.role}</p>}
+                        {/* Roll/Role is intentionally not displayed in the UI to avoid exposing authorization details.
+                            We still fetch it for internal logic (e.g., gating admin features), but do not render it. */}
+                        {/* {user.role && <p><strong>Roll:</strong> {user.role}</p>} */}
                     </div>
 
                     <button className="btn-primary" onClick={() => setEditing(true)}>

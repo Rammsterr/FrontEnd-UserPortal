@@ -152,6 +152,24 @@ body::before {
     filter: drop-shadow(0 0 8px rgba(0,166,200,0.25)) drop-shadow(0 0 14px rgba(255,45,149,0.18));
 }
 
+/* Bottom waves (light mode) */
+body .neon-bottom-waves {
+    pointer-events: none;
+    position: fixed;
+    inset: auto 0 0 0;
+    height: max(40vh, 360px);
+    background-image:
+      url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bl1" x1="0" x2="1"><stop offset="0%" stop-color="%2300a6c8"/><stop offset="100%" stop-color="%23ff2d95"/></linearGradient></defs><path d="M0,200 C180,240 360,140 540,160 C720,180 900,240 1080,200 C1260,160 1440,180 1440,180" fill="none" stroke="url(%23bl1)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/></svg>'),
+      url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bl2" x1="0" x2="1"><stop offset="0%" stop-color="%23008faf"/><stop offset="100%" stop-color="%238a2be2"/></linearGradient></defs><path d="M0,230 C200,190 380,250 560,220 C740,190 960,160 1140,200 C1320,240 1440,220 1440,220" fill="none" stroke="url(%23bl2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/></svg>'),
+      url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bl3" x1="0" x2="1"><stop offset="0%" stop-color="%23ff2d95"/><stop offset="100%" stop-color="%2300a6c8"/></linearGradient></defs><path d="M0,260 C220,300 420,260 640,240 C860,220 1120,260 1300,240 C1380,232 1440,228 1440,228" fill="none" stroke="url(%23bl3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" opacity="0.45"/></svg>');
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-position: center bottom, 12% 90%, 94% 78%;
+    background-size: cover, 120% auto, 110% auto;
+    z-index: -1;
+    animation: waveFloat 18s ease-in-out infinite reverse;
+    filter: drop-shadow(0 0 8px rgba(0,166,200,0.25)) drop-shadow(0 0 14px rgba(255,45,149,0.18));
+}
+
 /* Dark mode waves and glow */
 body.dark-theme::before {
     content: "";
@@ -172,6 +190,15 @@ body.dark-theme::before {
     filter: drop-shadow(0 0 12px rgba(0,229,255,0.35)) drop-shadow(0 0 24px rgba(255,62,165,0.25));
 }
 
+/* Bottom waves (dark mode) */
+body.dark-theme .neon-bottom-waves {
+    background-image:
+      url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bd1" x1="0" x2="1"><stop offset="0%" stop-color="%2300e5ff"/><stop offset="100%" stop-color="%23ff3ea5"/></linearGradient></defs><path d="M0,200 C180,240 360,140 540,160 C720,180 900,240 1080,200 C1260,160 1440,180 1440,180" fill="none" stroke="url(%23bd1)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/></svg>'),
+      url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bd2" x1="0" x2="1"><stop offset="0%" stop-color="%2300e5ff"/><stop offset="100%" stop-color="%23ff3ea5"/></linearGradient></defs><path d="M0,230 C200,190 380,250 560,220 C740,190 960,160 1140,200 C1320,240 1440,220 1440,220" fill="none" stroke="url(%23bd2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/></svg>'),
+      url('data:image/svg+xml;utf8,<svg viewBox="0 0 1440 320" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="bd3" x1="0" x2="1"><stop offset="0%" stop-color="%2300e5ff"/><stop offset="100%" stop-color="%23ff3ea5"/></linearGradient></defs><path d="M0,260 C220,300 420,260 640,240 C860,220 1120,260 1300,240 C1380,232 1440,228 1440,228" fill="none" stroke="url(%23bd3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.65"/></svg>');
+    filter: drop-shadow(0 0 12px rgba(0,229,255,0.35)) drop-shadow(0 0 24px rgba(255,62,165,0.25));
+}
+
 /* Ambient glow (light: pastel cyan) */
 @keyframes glowPulse {
     0% { transform: translateY(0) scale(1); opacity: 0.9; }
@@ -189,6 +216,15 @@ body::after {
     filter: blur(70px);
     z-index: -2;
     animation: glowPulse 12s ease-in-out infinite;
+}
+
+/* Respect reduced motion preferences (mobile accessibility) */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
 }
 
 /* Dark mode glow */
@@ -231,6 +267,8 @@ body.dark-theme::after {
         top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
         right: calc(env(safe-area-inset-right, 0px) + 0.5rem);
     }
+    /* Make header CTA wrap neatly on narrow screens */
+    header span { display: none; } /* hide long text to save space */
     /* Improve gradient/waves scaling on small screens */
     body::before { background-size: cover, 130% auto, 120% auto; background-position: top center, 8% 76px, right 6% top 128px; }
     body.dark-theme::before { background-size: cover, 130% auto, 120% auto; background-position: top center, 7% 70px, right 5% top 120px; }
@@ -243,6 +281,14 @@ body.dark-theme::after {
 img, picture, video, canvas, svg {
     max-width: 100%;
     height: auto;
+}
+
+/* Improve mobile touch behavior */
+html, body {
+    -webkit-tap-highlight-color: transparent; /* remove grey highlight on iOS/Android */
+}
+button, a, [role="button"], .btn-primary, .btn-secondary {
+    touch-action: manipulation; /* remove 300ms delay on old mobile browsers */
 }
 
 /* Enable clear focus rings for keyboard/touch accessibility */
