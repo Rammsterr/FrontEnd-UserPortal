@@ -1,36 +1,63 @@
-// Product Service API stubs prepared for future Spring Boot backend integration.
-// NOTE: Methods are defined with signatures and placeholder implementations.
-// When the Product Service backend is available, replace baseUrl and complete implementations.
+// Product Service integration adapted to Spring Boot backend described in issue.
+// Base URL: http://localhost:8081 (ProductService) | UserService remains at http://localhost:8080
+// API base path: /api/products
+// Swagger UI: `${baseUrl}/swagger-ui/index.html`
 
-export interface Product {
+export interface ProductResponse {
   id: string;
   name: string;
-  description?: string;
-  price?: number;
-  currency?: string;
-  sku?: string;
-  category?: string;
-  imageUrl?: string;
-  inStock?: boolean;
-  availableQuantity?: number;
-  createdAt?: string;
-  updatedAt?: string;
+  slug: string;
+  description: string | null;
+  price: number;
+  currency: string;
+  categoryName: string | null;
+  stockQuantity: number;
+  active: boolean;
+  attributes: Record<string, string>;
+  images: string[];
 }
 
-export interface ProductQuery {
-  q?: string;
-  category?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  inStock?: boolean;
+export interface ProductRequest {
+  name: string;
+  description?: string | null;
+  price: number;
+  currency: string;
+  categoryId?: string | null;
+  categoryName?: string | null;
+  stockQuantity?: number | null;
+  attributes?: Record<string, string> | null;
+  imageUrls?: string[] | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface ValidationErrorDetail {
+  field: string;
+  error: string;
+}
+
+export interface ApiErrorValidation {
+  error: 'Validation failed' | 'validation_failed';
+  details?: ValidationErrorDetail[];
+  message?: string;
+}
+export interface ApiErrorConflict {
+  error: 'Conflict' | 'conflict';
+  message: string;
+}
+export type ApiError = Partial<ApiErrorValidation & ApiErrorConflict> & { [k: string]: any };
+
+export interface PageResponse<T> {
+  content: T[];
+  pageNumber: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+}
+
 const baseUrl = process.env.REACT_APP_PRODUCT_API_BASE_URL || 'http://localhost:8081';
-// Swagger UI (to be linked later): `${baseUrl}/swagger-ui/index.html`
 
-// Helper to build query string
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function toQuery(params: Record<string, any>): string {
   const usp = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {
@@ -41,42 +68,85 @@ function toQuery(params: Record<string, any>): string {
 }
 
 export const productService = {
-  async getAllProducts(signal?: AbortSignal): Promise<Product[]> {
-    // Placeholder implementation — returns empty until backend is ready.
-    // Replace with: await fetch(`${baseUrl}/api/products`, { signal }).then(r => r.json())
-    return [];
+  // List paginated products according to backend contract
+  async listProducts(params?: { page?: number; size?: number; sortBy?: string; sortDir?: 'asc' | 'desc' }, signal?: AbortSignal): Promise<PageResponse<ProductResponse>> {
+    const q = new URLSearchParams({
+      page: String(params?.page ?? 0),
+      size: String(params?.size ?? 20),
+      sortBy: String(params?.sortBy ?? 'name'),
+      sortDir: String(params?.sortDir ?? 'asc'),
+    });
+    const res = await fetch(`${baseUrl}/api/products?${q.toString()}`, { signal, headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error(`Failed to load products: ${res.status}`);
+    return await res.json();
   },
 
-  async getProductById(id: string, signal?: AbortSignal): Promise<Product | null> {
-    // Replace with fetch to `${baseUrl}/api/products/${id}`
-    return null;
+  // List all products without pagination
+  async listAllProducts(signal?: AbortSignal): Promise<ProductResponse[]> {
+    const res = await fetch(`${baseUrl}/api/products/all`, { signal, headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error(`Failed to load products: ${res.status}`);
+    return await res.json();
   },
 
-  async searchProducts(query: ProductQuery, signal?: AbortSignal): Promise<Product[]> {
-    // Replace with fetch to `${baseUrl}/api/products/search${toQuery(query)}`
-    return [];
+  // No dedicated GET by id endpoint documented; temporary fallback: fetch all and find client-side
+  async getProductById(id: string, signal?: AbortSignal): Promise<ProductResponse | null> {
+    try {
+      const all = await productService.listAllProducts(signal);
+      return all.find(p => p.id === id) ?? null;
+    } catch (e: any) {
+      if (e?.name === 'AbortError') throw e;
+      throw new Error('Failed to load product');
+    }
   },
 
-  async addProduct(product: Partial<Product>): Promise<Product> {
-    // Requires auth (e.g., admin). Replace with POST to `${baseUrl}/api/products`.
-    return { id: 'temp-id', name: product.name || 'Ny produkt' } as Product;
+  // No search endpoint in backend spec; emulate a simple name contains filter client-side
+  async searchProducts(query: { q?: string }, signal?: AbortSignal): Promise<ProductResponse[]> {
+    const term = (query.q ?? '').toLowerCase().trim();
+    const all = await productService.listAllProducts(signal);
+    if (!term) return all;
+    return all.filter(p => p.name.toLowerCase().includes(term));
   },
 
-  async updateProduct(id: string, product: Partial<Product>): Promise<Product> {
-    // Replace with PUT/PATCH to `${baseUrl}/api/products/${id}`
-    return { id, name: product.name || 'Uppdaterad produkt' } as Product;
+  async addProduct(product: ProductRequest): Promise<ProductResponse> {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${baseUrl}/api/products`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(product)
+    });
+    if (!res.ok) {
+      let errBody: any;
+      try { errBody = await res.json(); } catch {}
+      if (res.status === 409) {
+        const msg = errBody?.message || 'Konflikt: namn eller slug upptagen';
+        throw new Error(msg);
+      }
+      if (res.status === 400) {
+        const detailsArr = (errBody?.details as ValidationErrorDetail[] | undefined);
+        if (detailsArr && detailsArr.length) {
+          const details = detailsArr.map((d: ValidationErrorDetail) => `${d.field}: ${d.error}`).join('; ');
+          throw new Error(`Valideringsfel: ${details}`);
+        }
+        throw new Error(errBody?.message || 'Valideringsfel vid skapande av produkt');
+      }
+      throw new Error(`Misslyckades att skapa produkt: ${res.status}`);
+    }
+    return await res.json();
   },
 
-  async deleteProduct(id: string): Promise<void> {
-    // Replace with DELETE to `${baseUrl}/api/products/${id}`
-    return;
+  // Update/delete/image upload are not available in backend spec; expose stubs to avoid runtime 404s
+  async updateProduct(): Promise<ProductResponse> {
+    throw new Error('Update product is not supported by backend yet');
   },
-
-  async uploadProductImage(id: string, file: File): Promise<string> {
-    // Prepare for Azure Blob or backend file handling later.
-    // Replace with POST to `${baseUrl}/api/products/${id}/image`
-    // Returns image URL (placeholder for now).
-    return `https://placeholder.local/images/${id}`;
+  async deleteProduct(): Promise<void> {
+    throw new Error('Delete product is not supported by backend yet');
+  },
+  async uploadProductImage(): Promise<string> {
+    throw new Error('Image upload is not supported by backend. Provide imageUrls in ProductRequest when creating product.');
   }
 };
 

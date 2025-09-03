@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import productService, { Product } from './productService';
+import productService, { ProductResponse } from './productService';
 
 // Produktdetaljer – visar detaljerad info om en produkt.
 const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<ProductResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,6 +16,10 @@ const ProductDetails: React.FC = () => {
           const p = await productService.getProductById(id, abort.signal);
           setProduct(p);
         }
+      } catch (e: any) {
+        if (e?.name !== 'AbortError') {
+          console.error('Failed to load product', e);
+        }
       } finally {
         setLoading(false);
       }
@@ -23,21 +27,31 @@ const ProductDetails: React.FC = () => {
     return () => abort.abort();
   }, [id]);
 
-  if (loading) return <p>Laddar produkt…</p>;
-  if (!product) return <p>Produkt hittades inte.</p>;
+  if (loading) return (
+    <div className="auth-form" style={{ textAlign: 'center' }}>
+      <p>Laddar produkt…</p>
+    </div>
+  );
+  if (!product) return (
+    <div className="auth-form" style={{ textAlign: 'center' }}>
+      <p>Produkt hittades inte.</p>
+    </div>
+  );
 
   return (
-    <section>
-      <h2>{product.name}</h2>
-      {product.imageUrl && (
-        <img src={product.imageUrl} alt={product.name} style={{ maxWidth: 320 }} />
+    <section className="auth-form" aria-labelledby="product-title">
+      <h2 id="product-title" style={{ textAlign: 'center', marginTop: 0 }}>{product.name}</h2>
+      {product.images && product.images.length > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <img src={product.images[0]} alt={product.name} style={{ maxWidth: 420, borderRadius: 12 }} />
+        </div>
       )}
       <p>{product.description || 'Ingen beskrivning'}</p>
       <p>
-        Pris: {product.price ?? '-'} {product.currency ?? ''}
+        <strong>Pris:</strong> {product.price ?? '-'} {product.currency ?? ''}
       </p>
       <p>
-        Lagerstatus: {product.inStock ? 'I lager' : 'Slut i lager'}
+        <strong>Lagerstatus:</strong> {product.stockQuantity > 0 && product.active ? 'I lager' : 'Slut / inaktiv'}
       </p>
     </section>
   );

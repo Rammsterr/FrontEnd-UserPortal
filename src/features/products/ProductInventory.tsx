@@ -1,13 +1,13 @@
 import React from 'react';
-import { Product } from './productService';
+import { ProductResponse } from './productService';
 
 // Lagerstatus och tillgänglighet (visuell komponent)
-const ProductInventory: React.FC<{ product: Product | null }> = ({ product }) => {
+const ProductInventory: React.FC<{ product: ProductResponse | null }> = ({ product }) => {
   if (!product) return null;
   return (
     <div style={{ marginTop: 8 }}>
       <strong>Lager:</strong>{' '}
-      {product.inStock ? `I lager (${product.availableQuantity ?? 'okänd kvantitet'})` : 'Slut i lager'}
+      {product.active && product.stockQuantity > 0 ? `I lager (${product.stockQuantity})` : 'Slut / inaktiv'}
     </div>
   );
 };

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import productService, { Product } from './productService';
+import productService, { ProductResponse } from './productService';
 
 // Sök- och filtreringskomponent (grund)
 const ProductSearch: React.FC = () => {
   const [q, setQ] = useState('');
-  const [results, setResults] = useState<Product[]>([]);
+  const [results, setResults] = useState<ProductResponse[]>([]);
 
   const onSearch = async (e: React.FormEvent) => {
     e.preventDefault();
