@@ -1,5 +1,7 @@
 # 🛍️ User Portal – React‑frontend
 
+![Skärmdump – Registreringsvy](https://i.imgur.com/1p7y6lq.png)
+
 Detta är en React‑app för användarportal med registrering, inloggning och profilvy. Appen använder JWT‑token som lagras i `localStorage` och HashRouter för enkel hosting (t.ex. GitHub Pages/Blob Static Website). Backend körs nu mot live‑tjänsterna UserService och ProductService (drillbi.se) med paginerad listning och skapande av produkter.
 
 ## Innehåll
@@ -63,14 +65,14 @@ Produkttjänst (Spring Boot ProductService):
   - Uppdatera produkt
   - Ta bort produkt
 
-Sökning i UI sker klient‑side: `productService.searchProducts()` filtrerar namn lokalt tills ett backend‑sök finns.
+Sökning i UI sker klient‑side: `productService.searchProducts()` filtrerar lokalt på namn, kategorinamn samt lägsta/högsta pris (min/max) tills ett backend‑sök finns.
 
 ## Routing
 All routing sker med HashRouter.
 - `#/` –
   - Inloggad: visar `UserProfile` och en "Logga ut"‑knapp
   - Utloggad: visar `AuthSwitch` som låter dig växla mellan Registrering och Login
-- `#/products` – produktlista
+- `#/products` – produktlista med filterfält (Namn, Kategori, Lägsta, Högsta). URL‑parametrar: `?name=&category=&min=&max=`
 - `#/products/:id` – produktdetaljer
 - `#/admin/products/new` – formulär för ny produkt (framtida adminflöde)
 
@@ -78,12 +80,13 @@ Se `src/App.tsx` och `src/components/Header.tsx` för navigationslogik.
 
 ## Produktfunktioner
 Koden finns under `src/features/products/`:
-- ProductList.tsx – lista (använder paginerat API)
+- ProductList.tsx – lista (paginerat API eller klientfilter vid aktiva filter: name/category/min/max)
 - ProductDetails.tsx – detaljer (hämtar via client‑side fallback tills GET /{id} finns)
 - ProductForm.tsx – skapa ny produkt (POST /api/products). Uppdatering ej stödd ännu.
-- ProductInventory.tsx – lager (framtida)
-- ProductImageUpload.tsx – bilduppladdning (framtida; använd `imageUrls` tills dess)
-- productService.ts – konkret integration mot Spring Boot ProductService
+- ProductSearch.tsx – enkel sökkomponent (namn)
+- ProductInventory.tsx – lager (visualisering av lagersaldo/aktiv)
+- ProductImageUpload.tsx – bilduppladdning (via upload‑endpoint om konfigurerad)
+- productService.ts – integration mot Spring Boot ProductService (lista, skapa, klient‑side sök, bilduppladdning)
 
 ## Tillgänglighet och UX
 - Landmärken: `<main role="main">` och semantisk header/footer
@@ -111,4 +114,4 @@ Koden finns under `src/features/products/`:
 - För att skapa produkter krävs att du är inloggad – token måste finnas i `localStorage` som `token`.
 - HashRouter används för att undvika serverkonfiguration vid statisk hosting.
 
-Senast uppdaterad: 2025-09-03 12:05
+Senast uppdaterad: 2025-09-04 14:05
