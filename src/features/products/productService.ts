@@ -125,12 +125,22 @@ export const productService = {
     }
   },
 
-  // No search endpoint in backend spec; emulate a simple name contains filter client-side
-  async searchProducts(query: { q?: string }, signal?: AbortSignal): Promise<ProductResponse[]> {
-    const term = (query.q ?? '').toLowerCase().trim();
+  // Client-side search with multiple fields: name, categoryName, minPrice, maxPrice
+  async searchProducts(query: { name?: string; category?: string; minPrice?: number | string; maxPrice?: number | string }, signal?: AbortSignal): Promise<ProductResponse[]> {
+    const nameTerm = (query.name ?? '').toLowerCase().trim();
+    const categoryTerm = (query.category ?? '').toLowerCase().trim();
+    const min = query.minPrice !== undefined && query.minPrice !== null && String(query.minPrice) !== '' ? Number(query.minPrice) : undefined;
+    const max = query.maxPrice !== undefined && query.maxPrice !== null && String(query.maxPrice) !== '' ? Number(query.maxPrice) : undefined;
+
     const all = await productService.listAllProducts(signal);
-    if (!term) return all;
-    return all.filter(p => p.name.toLowerCase().includes(term));
+
+    return all.filter(p => {
+      const matchesName = !nameTerm || (p.name || '').toLowerCase().includes(nameTerm);
+      const matchesCategory = !categoryTerm || (p.categoryName || '').toLowerCase().includes(categoryTerm);
+      const matchesMin = min === undefined || (typeof p.price === 'number' && p.price >= min);
+      const matchesMax = max === undefined || (typeof p.price === 'number' && p.price <= max);
+      return matchesName && matchesCategory && matchesMin && matchesMax;
+    });
   },
 
   async addProduct(product: ProductRequest): Promise<ProductResponse> {

@@ -1,28 +1,49 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import productService, { ProductResponse, resolveImageUrl, getProductPrimaryImage } from './productService';
 
-// Produktlista – med förberedd sökfunktionalitet via querystring (?q=)
+// Produktlista – utökad sök/filtrering via querystring (?name=&category=&min=&max=)
 const ProductList: React.FC = () => {
   const [products, setProducts] = useState<ProductResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
-  const q = searchParams.get('q') ?? '';
 
-  // Enkel debounce så vi inte gör anrop vid varje tangenttryck
-  const [input, setInput] = useState(q);
-  useEffect(() => setInput(q), [q]);
-  const debouncedQ = useDebouncedValue(input, 300);
+  // Läs parametrar från URL
+  const nameParam = searchParams.get('name') ?? '';
+  const categoryParam = searchParams.get('category') ?? '';
+  const minParam = searchParams.get('min') ?? '';
+  const maxParam = searchParams.get('max') ?? '';
+
+  // Lokalt formulärstate + debounce
+  const [name, setName] = useState(nameParam);
+  const [category, setCategory] = useState(categoryParam);
+  const [minPrice, setMinPrice] = useState(minParam);
+  const [maxPrice, setMaxPrice] = useState(maxParam);
+
+  useEffect(() => { setName(nameParam); }, [nameParam]);
+  useEffect(() => { setCategory(categoryParam); }, [categoryParam]);
+  useEffect(() => { setMinPrice(minParam); }, [minParam]);
+  useEffect(() => { setMaxPrice(maxParam); }, [maxParam]);
+
+  const debouncedName = useDebouncedValue(name, 300);
+  const debouncedCategory = useDebouncedValue(category, 300);
+  const debouncedMin = useDebouncedValue(minPrice, 300);
+  const debouncedMax = useDebouncedValue(maxPrice, 300);
 
   useEffect(() => {
     const abort = new AbortController();
     (async () => {
       try {
         setLoading(true);
-        // Använd backendens paginerade listning tills riktigt sök-API finns.
-        // Om debouncedQ finns, använd temporär client-side filter via searchProducts.
-        if (debouncedQ) {
-          const results = await productService.searchProducts({ q: debouncedQ }, abort.signal);
+        // Om något filter är ifyllt, använd client-side filter; annars ladda en sida från backend
+        const hasAnyFilter = !!(debouncedName || debouncedCategory || debouncedMin || debouncedMax);
+        if (hasAnyFilter) {
+          const results = await productService.searchProducts({
+            name: debouncedName,
+            category: debouncedCategory,
+            minPrice: debouncedMin,
+            maxPrice: debouncedMax,
+          }, abort.signal);
           setProducts(results);
         } else {
           const page = await productService.listProducts({ page: 0, size: 20, sortBy: 'name', sortDir: 'asc' }, abort.signal);
@@ -37,41 +58,86 @@ const ProductList: React.FC = () => {
       }
     })();
     return () => abort.abort();
-  }, [debouncedQ]);
+  }, [debouncedName, debouncedCategory, debouncedMin, debouncedMax]);
 
   return (
-    <section className="auth-form" aria-labelledby="products-title">
+    <section className="auth-form products-form" aria-labelledby="products-title">
       <h2 id="products-title" style={{ textAlign: 'center', marginTop: 0 }}>Produkter</h2>
 
-      {/* Sökfält – synkar med URL:ens query (?q=) */}
+      {/* Filtreringsformulär – synkar med URL:ens query */}
       <form
         role="search"
         aria-label="Sök produkter"
+        className="filter-grid"
         onSubmit={(e) => {
           e.preventDefault();
-          const next = input.trim();
-          if (next) setSearchParams({ q: next }); else setSearchParams({});
+          const nextParams: Record<string, string> = {};
+          const n = name.trim();
+          const c = category.trim();
+          let minStr = minPrice.trim();
+          let maxStr = maxPrice.trim();
+          // Om både min och max finns och min > max, byt plats för en bättre UX
+          const minNum = minStr !== '' ? Number(minStr) : NaN;
+          const maxNum = maxStr !== '' ? Number(maxStr) : NaN;
+          if (!isNaN(minNum) && !isNaN(maxNum) && minNum > maxNum) {
+            const tmp = minStr; minStr = maxStr; maxStr = tmp;
+            setMinPrice(minStr); setMaxPrice(maxStr);
+          }
+          if (n) nextParams.name = n;
+          if (c) nextParams.category = c;
+          if (minStr) nextParams.min = minStr;
+          if (maxStr) nextParams.max = maxStr;
+          setSearchParams(nextParams);
         }}
-        style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', margin: '0.5rem 0 1rem' }}
       >
-        <label htmlFor="search" className="visually-hidden">Sök produkter</label>
+        <label htmlFor="name" className="visually-hidden">Namn</label>
         <input
-          id="search"
+          id="name"
           type="search"
-          placeholder="Sök produkter…"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
+          placeholder="Namn…"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           className="input"
-          style={{ minWidth: 240 }}
         />
-        <button className="btn-primary btn-inline" type="submit">Sök</button>
-        {q && (
-          <button
-            type="button"
-            className="btn-secondary btn-inline"
-            onClick={() => { setInput(''); setSearchParams({}); }}
-          >Rensa</button>
-        )}
+        <label htmlFor="category" className="visually-hidden">Kategori</label>
+        <input
+          id="category"
+          type="search"
+          placeholder="Kategori…"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="input"
+        />
+        <label htmlFor="min" className="visually-hidden">Lägsta pris</label>
+        <input
+          id="min"
+          type="number"
+          inputMode="decimal"
+          placeholder="Lägsta pris"
+          value={minPrice}
+          onChange={(e) => setMinPrice(e.target.value)}
+          className="input"
+        />
+        <label htmlFor="max" className="visually-hidden">Högsta pris</label>
+        <input
+          id="max"
+          type="number"
+          inputMode="decimal"
+          placeholder="Högsta pris"
+          value={maxPrice}
+          onChange={(e) => setMaxPrice(e.target.value)}
+          className="input"
+        />
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button className="btn-primary btn-inline" type="submit">Sök</button>
+          {(nameParam || categoryParam || minParam || maxParam) && (
+            <button
+              type="button"
+              className="btn-secondary btn-inline"
+              onClick={() => { setName(''); setCategory(''); setMinPrice(''); setMaxPrice(''); setSearchParams({}); }}
+            >Rensa</button>
+          )}
+        </div>
       </form>
 
       {loading ? (

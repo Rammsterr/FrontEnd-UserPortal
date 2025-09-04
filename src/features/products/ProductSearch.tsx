@@ -3,12 +3,12 @@ import productService, { ProductResponse } from './productService';
 
 // Sök- och filtreringskomponent (grund)
 const ProductSearch: React.FC = () => {
-  const [q, setQ] = useState('');
+  const [name, setName] = useState('');
   const [results, setResults] = useState<ProductResponse[]>([]);
 
   const onSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    const data = await productService.searchProducts({ q });
+    const data = await productService.searchProducts({ name });
     setResults(data);
   };
 
@@ -16,7 +16,7 @@ const ProductSearch: React.FC = () => {
     <section>
       <h3>Sök produkter</h3>
       <form onSubmit={onSearch} className="auth-form">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Sök…" />
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Sök…" />
         <button className="btn-primary" type="submit">Sök</button>
       </form>
       {results.length > 0 && (

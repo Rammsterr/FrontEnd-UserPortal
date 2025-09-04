@@ -199,3 +199,45 @@ body.dark-theme .btn-secondary:hover {
         font-size: 1.05rem;
     }
 }
+
+
+/* ===== Product list filter layout overrides ===== */
+.products-form {
+    max-width: 980px; /* let the filter row breathe */
+}
+.products-form .filter-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(140px, 1fr));
+    gap: 0.5rem;
+    align-items: center;
+    margin: 0.5rem 0 1rem;
+}
+.products-form .filter-grid > input {
+    min-width: 0; /* allow inputs to shrink evenly */
+}
+.products-form .filter-grid > div {
+    justify-self: end;
+}
+
+/* Responsive stacking for smaller screens */
+@media (max-width: 860px) {
+    .products-form .filter-grid {
+        grid-template-columns: repeat(3, minmax(140px, 1fr));
+    }
+}
+@media (max-width: 720px) {
+    .products-form .filter-grid {
+        grid-template-columns: 1fr 1fr; /* two columns */
+    }
+    .products-form .filter-grid > div {
+        grid-column: 1 / -1;
+        justify-self: stretch;
+        display: flex;
+        gap: 0.5rem;
+    }
+}
+@media (max-width: 480px) {
+    .products-form .filter-grid {
+        grid-template-columns: 1fr; /* stack all fields */
+    }
+}
