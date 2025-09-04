@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import productService, { ProductResponse } from './productService';
 
 // Produktlista – visar produkter. När backend är redo, fylls listan från API.
@@ -40,7 +41,7 @@ const ProductList: React.FC = () => {
           {products.map(p => (
             <li key={p.id} style={{ display: 'grid', gridTemplateColumns: '64px 1fr auto', alignItems: 'center', gap: '0.75rem' }}>
               {/* Bild */}
-              <a href={`#/products/${p.id}`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Link to={`/products/${p.id}`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
                 {p.images && p.images.length > 0 ? (
                   <img src={p.images[0]} alt={p.name} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} />
                 ) : (
@@ -48,9 +49,9 @@ const ProductList: React.FC = () => {
                     No img
                   </div>
                 )}
-              </a>
+              </Link>
               {/* Namn */}
-              <a className="btn-secondary btn-inline" href={`#/products/${p.id}`}>{p.name}</a>
+              <Link className="btn-secondary btn-inline" to={`/products/${p.id}`}>{p.name}</Link>
               {/* Status */}
               {(p.stockQuantity <= 0 || !p.active) && <span style={{marginLeft: 8, color: 'red', whiteSpace: 'nowrap'}}>(Ej tillgänglig)</span>}
             </li>

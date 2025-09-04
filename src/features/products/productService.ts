@@ -58,14 +58,6 @@ export interface PageResponse<T> {
 
 const baseUrl = process.env.REACT_APP_PRODUCT_API_BASE_URL || 'http://localhost:8081';
 
-function toQuery(params: Record<string, any>): string {
-  const usp = new URLSearchParams();
-  Object.entries(params).forEach(([k, v]) => {
-    if (v !== undefined && v !== null && v !== '') usp.append(k, String(v));
-  });
-  const s = usp.toString();
-  return s ? `?${s}` : '';
-}
 
 export const productService = {
   // List paginated products according to backend contract
