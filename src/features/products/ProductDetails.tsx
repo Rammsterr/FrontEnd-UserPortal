@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import productService, { ProductResponse } from './productService';
+import productService, { ProductResponse, resolveImageUrl, getProductPrimaryImage } from './productService';
 
 // Produktdetaljer – visar detaljerad info om en produkt.
 const ProductDetails: React.FC = () => {
@@ -41,11 +41,11 @@ const ProductDetails: React.FC = () => {
   return (
     <section className="auth-form" aria-labelledby="product-title">
       <h2 id="product-title" style={{ textAlign: 'center', marginTop: 0 }}>{product.name}</h2>
-      {product.images && product.images.length > 0 && (
+      {(() => { const img = getProductPrimaryImage(product); if (!img) return null; return (
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-          <img src={product.images[0]} alt={product.name} style={{ maxWidth: 420, borderRadius: 12 }} />
+          <img src={resolveImageUrl(img)} alt={product.name} style={{ maxWidth: 420, borderRadius: 12 }} />
         </div>
-      )}
+      ); })()}
       <p>{product.description || 'Ingen beskrivning'}</p>
       <p>
         <strong>Pris:</strong> {product.price ?? '-'} {product.currency ?? ''}

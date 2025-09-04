@@ -9,15 +9,20 @@ const Login = () => {
         e.preventDefault();
 
         try {
-            const response = await fetch('http://localhost:8080/auth/login', {
+            const response = await fetch('https://userservice.drillbi.se/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email, username: email, password }),
             });
 
             if (response.ok) {
                 const data = await response.json();
-                const token = data.accessToken;
+                const token = data.accessToken || data.token || data.jwt || data.id_token;
+                if (!token) {
+                    console.error('Inloggning svarade utan token-fält', data);
+                    alert('Inloggning misslyckades: Ogiltigt svar från servern.');
+                    return;
+                }
                 localStorage.setItem('token', token);
                 window.location.reload();
                 alert('Inloggning lyckades!');

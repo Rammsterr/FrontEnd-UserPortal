@@ -18,10 +18,10 @@ const Register = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:8080/auth/register', {
+            const response = await fetch('https://userservice.drillbi.se/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, firstName, lastName }),
+                body: JSON.stringify({ email, username: email, password, firstName, lastName }),
             });
 
             if (response.ok) {
@@ -43,9 +43,20 @@ const Register = () => {
                 window.dispatchEvent(new Event('show-login'));
 
             } else {
-                const errorText = await response.text();
-                console.error("BackEnd error: ", errorText);
-                alert('Registreringen misslyckades.');
+                let message = 'Registreringen misslyckades.';
+                try {
+                    const text = await response.text();
+                    if (text) {
+                        try {
+                            const obj = JSON.parse(text);
+                            message = obj.message || obj.error || message;
+                        } catch {
+                            message = text;
+                        }
+                    }
+                } catch {}
+                console.error('BackEnd error: ', message);
+                alert(message);
             }
         } catch (error) {
             console.error('Något gick fel:', error);

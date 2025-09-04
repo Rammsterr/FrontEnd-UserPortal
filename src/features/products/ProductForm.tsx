@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import productService, { ProductRequest, ProductResponse } from './productService';
+import ProductImageUpload from './ProductImageUpload';
 
 // Enkel formulärkomponent för att lägga till/redigera produkter (admin framöver)
 interface Props {
@@ -17,6 +18,7 @@ const ProductForm: React.FC<Props> = ({ product, onSaved }) => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<ProductResponse | null>(null);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +32,8 @@ const ProductForm: React.FC<Props> = ({ product, onSaved }) => {
         price: price === '' ? 0 : Number(price),
         currency,
         categoryId: categoryId || undefined,
-        categoryName: categoryName || undefined
+        categoryName: categoryName || undefined,
+        imageUrls: imageUrls.length ? imageUrls : undefined
       };
       if (!payload.price || payload.price <= 0) {
         throw new Error('Pris måste vara > 0');
@@ -74,6 +77,8 @@ const ProductForm: React.FC<Props> = ({ product, onSaved }) => {
         <input value={categoryName} onChange={(e) => setCategoryName(e.target.value)} placeholder="t.ex. Elektronik" />
         <small>Enligt backend: ange antingen categoryId eller categoryName (eller lämna båda tomma).</small>
       </fieldset>
+
+      <ProductImageUpload value={imageUrls} onChange={setImageUrls} />
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {created && (

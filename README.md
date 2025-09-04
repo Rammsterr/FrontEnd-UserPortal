@@ -1,6 +1,6 @@
 # 🛍️ User Portal – React‑frontend
 
-Detta är en React‑app för användarportal med registrering, inloggning och profilvy. Appen använder JWT‑token som lagras i `localStorage` och HashRouter för enkel hosting (t.ex. GitHub Pages/Blob Static Website). Efter senaste uppdateringen är produktdelen integrerad mot ett Spring Boot‑baserat ProductService (port 8081) med paginerad listning och skapande av produkter.
+Detta är en React‑app för användarportal med registrering, inloggning och profilvy. Appen använder JWT‑token som lagras i `localStorage` och HashRouter för enkel hosting (t.ex. GitHub Pages/Blob Static Website). Backend körs nu mot live‑tjänsterna UserService och ProductService (drillbi.se) med paginerad listning och skapande av produkter.
 
 ## Innehåll
 - Översikt och funktioner
@@ -32,21 +32,29 @@ Detta är en React‑app för användarportal med registrering, inloggning och p
 1. Installera beroenden:
    npm install
 2. Sätt miljövariabler i en `.env` i projektroten vid behov:
-   - REACT_APP_PRODUCT_API_BASE_URL=http://localhost:8081
+   - REACT_APP_PRODUCT_API_BASE_URL=https://productservice.drillbi.se
+   - REACT_APP_PRODUCT_ASSETS_BASE_URL=https://productservice.drillbi.se/uploads  # om bilderna serveras under /uploads
 3. Starta utvecklingsserver:
    npm start
 4. Öppna http://localhost:3000
 
+Bilduppladdning:
+- Sätt (vid behov) miljövariabler:
+  - REACT_APP_PRODUCT_IMAGE_UPLOAD_PATH=/api/products/images
+  - REACT_APP_PRODUCT_ASSETS_BASE_URL=http://localhost:8081/uploads  # om backend serverar bilder där
+- Använd formuläret "Ny produkt" för att välja och ladda upp bilder innan du sparar produkten.
+
 ## Miljövariabler och API‑endpoints
 Användartjänst (User Service):
-- Login: `POST http://localhost:8080/auth/login` (se `src/components/Login/Login.tsx`)
-- Appen förväntar sig `accessToken` i svaret och lagrar den i `localStorage` som `token`.
-- Profilendpoints konsumeras från `UserProfile` (se komponenten) och använder token i Authorization‑header.
+- Login: `POST https://userservice.drillbi.se/auth/login` (se `src/components/Login/Login.tsx`)
+- Registrering: `POST https://userservice.drillbi.se/auth/register` (se `src/components/Register.tsx`)
+- Profil: `GET https://userservice.drillbi.se/me` och `PUT https://userservice.drillbi.se/me/settings` med `Authorization: Bearer <token>`
+- Appen förväntar sig `accessToken` i svaret och lagrar den i `localStorage` som `token`. 
 
 Produkttjänst (Spring Boot ProductService):
-- Bas‑URL: miljövariabeln `REACT_APP_PRODUCT_API_BASE_URL` (default: `http://localhost:8081`)
+- Bas‑URL: miljövariabeln `REACT_APP_PRODUCT_API_BASE_URL` (default: `https://productservice.drillbi.se`)
 - API‑basväg: `/api/products`
-- Swagger UI: `http://localhost:8081/swagger-ui/index.html`
+- Swagger UI: `https://productservice.drillbi.se/swagger-ui/index.html`
 - Endpoints som används i frontend:
   - GET `GET {BASE}/api/products?page={page}&size={size}&sortBy={field}&sortDir=asc|desc` – paginerad lista (se `ProductList.tsx`)
   - GET `GET {BASE}/api/products/all` – hämta alla produkter
@@ -54,7 +62,6 @@ Produkttjänst (Spring Boot ProductService):
 - Stöd som saknas i backend i nuläget (hanteras som stubbar i UI):
   - Uppdatera produkt
   - Ta bort produkt
-  - Bilduppladdning (använd `imageUrls` vid skapande istället)
 
 Sökning i UI sker klient‑side: `productService.searchProducts()` filtrerar namn lokalt tills ett backend‑sök finns.
 
