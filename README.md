@@ -11,6 +11,7 @@ Detta är en React‑app för användarportal med registrering, inloggning och p
 - Miljövariabler och API‑endpoints
 - Routing
 - Produktfunktioner
+- Kundvagn (frontend)
 - Tillgänglighet och UX
 - Scripts
 - Projektstruktur
@@ -23,6 +24,7 @@ Detta är en React‑app för användarportal med registrering, inloggning och p
 - Växling mellan login/registrering via komponenten `AuthSwitch`
 - Header med snabblänk till inloggning samt temaväxling
 - Produktvyer: lista, detaljer och formulär för ny produkt (skapa)
+- Kundvagn i frontend: Context + reducer, localStorage‑persistens, badge i headern och sidopanel med qty‑kontroller
 
 ## Tekniker
 - React (Create React App)
@@ -76,14 +78,13 @@ All routing sker med HashRouter.
 - `#/products/:id` – produktdetaljer
 - `#/admin/products/new` – formulär för ny produkt (framtida adminflöde)
 
-Se `src/App.tsx` och `src/components/Header.tsx` för navigationslogik.
+Se `src/App.tsx` och `src/components/Header.tsx` för navigationslogik. Kundvagnspanelen öppnas via ikonen i Header (CartBadge) och hanteras i `src/components/Cart/Cart.tsx`.
 
 ## Produktfunktioner
 Koden finns under `src/features/products/`:
-- ProductList.tsx – lista (paginerat API eller klientfilter vid aktiva filter: name/category/min/max)
+- ProductList.tsx – lista (paginerat API eller klientfilter vid aktiva filter: name/category/min/max). Sorteringsdropdownen är borttagen enligt senaste UX‑önskemål.
 - ProductDetails.tsx – detaljer (hämtar via client‑side fallback tills GET /{id} finns)
 - ProductForm.tsx – skapa ny produkt (POST /api/products). Uppdatering ej stödd ännu.
-- ProductSearch.tsx – enkel sökkomponent (namn)
 - ProductInventory.tsx – lager (visualisering av lagersaldo/aktiv)
 - ProductImageUpload.tsx – bilduppladdning (via upload‑endpoint om konfigurerad)
 - productService.ts – integration mot Spring Boot ProductService (lista, skapa, klient‑side sök, bilduppladdning)
@@ -92,7 +93,7 @@ Koden finns under `src/features/products/`:
 - Landmärken: `<main role="main">` och semantisk header/footer
 - Tydlig knapp för "Logga ut" som endast visas när token finns
 - Textfeedback vid autentiseringsflöden
-- Tema‑växling via `ThemeToggle` (i Header)
+- Tema‑växling via `ThemeToggle` (i Header). Knappar för kundvagn använder aria‑label och qty‑kontroller har spärrar (min 1, max 99).
 
 ## Scripts
 - `npm start` – startar dev‑server
@@ -100,8 +101,12 @@ Koden finns under `src/features/products/`:
 - `npm test` – startar testkörning (CRA standard)
 
 ## Projektstruktur (utdrag)
-- `src/App.tsx` – appens rot, routes och villkorad vy baserat på token
-- `src/components/Header.tsx` – titel, navigation, login/logga‑ut och tema
+- `src/App.tsx` – appens rot, routes och villkorad vy baserat på token; wrapper med `CartProvider` och mountar `Cart`‑panelen
+- `src/components/Header.tsx` – titel, navigation, login/logga‑ut, kundvagnsbadge och tema
+- `src/components/Cart/CartBadge.tsx` – liten badge i headern som visar antal/summa och öppnar kundvagnen
+- `src/components/Cart/Cart.tsx` – sidopanel som listar varor, qty‑kontroller, sum­ma och töm‑knapp
+- `src/context/CartContext.tsx` – Context, reducer och localStorage‑persistens
+- `src/utils/formatPrice.ts` – SEK‑formattering av priser
 - `src/components/AuthSwitch.tsx` – växlar mellan Login och Register
 - `src/components/Login/Login.tsx` – loginflöde mot `/auth/login`
 - `src/components/Register.tsx` – registreringsflöde
@@ -114,4 +119,4 @@ Koden finns under `src/features/products/`:
 - För att skapa produkter krävs att du är inloggad – token måste finnas i `localStorage` som `token`.
 - HashRouter används för att undvika serverkonfiguration vid statisk hosting.
 
-Senast uppdaterad: 2025-09-04 14:05
+Senast uppdaterad: 2025-09-05 10:34

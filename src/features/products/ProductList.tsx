@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import productService, { ProductResponse, resolveImageUrl, getProductPrimaryImage } from './productService';
+import { useCart } from '../../context/CartContext';
+import formatPriceSEK from '../../utils/formatPrice';
 
 // Produktlista – utökad sök/filtrering via querystring (?name=&category=&min=&max=)
 const ProductList: React.FC = () => {
   const [products, setProducts] = useState<ProductResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
+  const { addToCart } = useCart();
 
   // Läs parametrar från URL
   const nameParam = searchParams.get('name') ?? '';
@@ -163,6 +166,16 @@ const ProductList: React.FC = () => {
               </Link>
               {/* Namn */}
               <Link className="btn-secondary btn-inline" to={`/products/${p.id}`}>{p.name}</Link>
+              {/* Åtgärder */}
+              <div style={{ display: 'grid', gap: '0.25rem', justifyItems: 'end' }}>
+                <div>{formatPriceSEK(p.price)}</div>
+                <button
+                  type="button"
+                  className="btn-primary btn-inline"
+                  aria-label={`Lägg ${p.name} i kundvagnen`}
+                  onClick={() => addToCart({ id: p.id, name: p.name, price: p.price, imageUrl: getProductPrimaryImage(p) ? resolveImageUrl(getProductPrimaryImage(p)!) : undefined })}
+                >Lägg i kundvagn</button>
+              </div>
               {/* Status */}
               {(p.stockQuantity <= 0 || !p.active) && <span style={{marginLeft: 8, color: 'red', whiteSpace: 'nowrap'}}>(Ej tillgänglig)</span>}
             </li>
