@@ -1,6 +1,6 @@
 # 🛍️ User Portal – React‑frontend
 
-![Webpage](images/frontEnd.png)
+![Webpage](images/newFRONTeND.png)
 
 Detta är en React‑app för användarportal med registrering, inloggning och profilvy. Appen använder JWT‑token som lagras i `localStorage` och HashRouter för enkel hosting (t.ex. GitHub Pages/Blob Static Website). Backend körs nu mot live‑tjänsterna UserService och ProductService (drillbi.se) med paginerad listning och skapande av produkter.
 
