@@ -1,11 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
 import CartBadge from './Cart/CartBadge';
 
-type HeaderProps = { onCartClick?: () => void };
+ type HeaderProps = { onCartClick?: () => void };
 const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const [displayName, setDisplayName] = useState<string | null>(null);
+
+  // Fetch a lightweight user identity to show name in header
+  useEffect(() => {
+    let aborted = false;
+    const fetchMe = async () => {
+      if (!token) { setDisplayName(null); return; }
+      try {
+        const res = await fetch('https://userservice.drillbi.se/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) { setDisplayName(null); return; }
+        const data: { firstName?: string; lastName?: string; email?: string } = await res.json();
+        if (aborted) return;
+        const fn = (data.firstName || '').trim();
+        const ln = (data.lastName || '').trim();
+        const name = [fn, ln].filter(Boolean).join(' ');
+        setDisplayName(name || data.email || '');
+      } catch {
+        if (!aborted) setDisplayName(null);
+      }
+    };
+    fetchMe();
+    return () => { aborted = true; };
+  }, [token]);
+
   return (
     <header style={{
       position: 'relative',
@@ -41,7 +67,9 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
             </>
           ) : (
             <>
-              <span style={{ opacity: 0.85 }}>Inloggad</span>
+              <span style={{ opacity: 0.85 }}>
+                {displayName && displayName.trim().length > 0 ? displayName : 'Inloggad'}
+              </span>
               <button
                 className="btn-primary btn-inline"
                 onClick={() => {
