@@ -114,29 +114,64 @@ export const productService = {
     return await res.json();
   },
 
-  // No dedicated GET by id endpoint documented; temporary fallback: fetch all and find client-side
+  // Fetch a single product by id (backend supports GET /api/products/{id}). Fallback to listAll if 404.
   async getProductById(id: string, signal?: AbortSignal): Promise<ProductResponse | null> {
     try {
-      const all = await productService.listAllProducts(signal);
-      return all.find(p => p.id === id) ?? null;
+      const res = await fetch(`${productApiBaseUrl}/api/products/${encodeURIComponent(id)}`, { signal, headers: { 'Accept': 'application/json' } });
+      if (res.status === 404) {
+        // Graceful fallback for older backends
+        try {
+          const all = await productService.listAllProducts(signal);
+          return all.find(p => p.id === id) ?? null;
+        } catch { return null; }
+      }
+      if (!res.ok) throw new Error(`Failed to load product: ${res.status}`);
+      return await res.json();
     } catch (e: any) {
       if (e?.name === 'AbortError') throw e;
       throw new Error('Failed to load product');
     }
   },
 
-  // Client-side search with multiple fields: name, categoryName, minPrice, maxPrice
+  // Search with backend support (GET /api/products/search), falling back to client-side filter if unavailable
   async searchProducts(query: { name?: string; category?: string; minPrice?: number | string; maxPrice?: number | string }, signal?: AbortSignal): Promise<ProductResponse[]> {
-    const nameTerm = (query.name ?? '').toLowerCase().trim();
-    const categoryTerm = (query.category ?? '').toLowerCase().trim();
-    const min = query.minPrice !== undefined && query.minPrice !== null && String(query.minPrice) !== '' ? Number(query.minPrice) : undefined;
-    const max = query.maxPrice !== undefined && query.maxPrice !== null && String(query.maxPrice) !== '' ? Number(query.maxPrice) : undefined;
+    const nameTerm = (query.name ?? '').toString().trim();
+    const categoryTermRaw = (query.category ?? '').toString().trim();
+    const minStr = query.minPrice !== undefined && query.minPrice !== null && String(query.minPrice) !== '' ? String(query.minPrice) : undefined;
+    const maxStr = query.maxPrice !== undefined && query.maxPrice !== null && String(query.maxPrice) !== '' ? String(query.maxPrice) : undefined;
+
+    // Try backend search first
+    try {
+      const q = new URLSearchParams({
+        ...(nameTerm ? { name: nameTerm } : {}),
+        ...(categoryTermRaw ? { categoryName: categoryTermRaw } : {}),
+        ...(minStr ? { minPrice: minStr } : {}),
+        ...(maxStr ? { maxPrice: maxStr } : {}),
+      } as Record<string, string>);
+      const res = await fetch(`${productApiBaseUrl}/api/products/search?${q.toString()}`, { signal, headers: { 'Accept': 'application/json' } });
+      if (res.ok) {
+        return await res.json();
+      }
+      // If endpoint not found, fall through to client-side filtering
+      if (res.status !== 404) {
+        // Other failure codes -> throw to be caught below
+        throw new Error(`Search failed: ${res.status}`);
+      }
+    } catch (e: any) {
+      if (e?.name === 'AbortError') throw e;
+      // Continue to client-side fallback
+    }
+
+    // Client-side fallback
+    const nameLC = nameTerm.toLowerCase();
+    const categoryLC = categoryTermRaw.toLowerCase();
+    const min = minStr !== undefined ? Number(minStr) : undefined;
+    const max = maxStr !== undefined ? Number(maxStr) : undefined;
 
     const all = await productService.listAllProducts(signal);
-
     return all.filter(p => {
-      const matchesName = !nameTerm || (p.name || '').toLowerCase().includes(nameTerm);
-      const matchesCategory = !categoryTerm || (p.categoryName || '').toLowerCase().includes(categoryTerm);
+      const matchesName = !nameLC || (p.name || '').toLowerCase().includes(nameLC);
+      const matchesCategory = !categoryLC || (p.categoryName || '').toLowerCase().includes(categoryLC);
       const matchesMin = min === undefined || (typeof p.price === 'number' && p.price >= min);
       const matchesMax = max === undefined || (typeof p.price === 'number' && p.price <= max);
       return matchesName && matchesCategory && matchesMin && matchesMax;
@@ -182,6 +217,8 @@ export const productService = {
     throw new Error('Delete product is not supported by backend yet');
   },
   async uploadProductImage(file: File): Promise<string> {
+    // NOTE: Current UI uploads images before product creation; backend prefers /api/products/{id}/images after product exists.
+    // We keep this preparatory generic upload path for now, configurable via REACT_APP_PRODUCT_IMAGE_UPLOAD_PATH.
     const token = localStorage.getItem('token');
     const uploadPath = process.env.REACT_APP_PRODUCT_IMAGE_UPLOAD_PATH || '/api/products/images';
     const url = joinUrl(productApiBaseUrl, uploadPath);

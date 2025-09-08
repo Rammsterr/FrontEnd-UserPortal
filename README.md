@@ -10,6 +10,7 @@ Detta är en React‑app för användarportal med registrering, inloggning och p
 - Kom igång (installation och start)
 - Miljövariabler och API‑endpoints
 - Routing
+- Order (frontend)
 - Produktfunktioner
 - Kundvagn (frontend)
 - Tillgänglighet och UX
@@ -24,7 +25,7 @@ Detta är en React‑app för användarportal med registrering, inloggning och p
 - Växling mellan login/registrering via komponenten `AuthSwitch`
 - Header med snabblänk till inloggning samt temaväxling
 - Produktvyer: lista, detaljer och formulär för ny produkt (skapa)
-- Kundvagn i frontend: Context + reducer, localStorage‑persistens, badge i headern och sidopanel med qty‑kontroller
+- Kundvagn i frontend: Context + reducer, localStorage‑persistens, badge i headern och sidopanel med qty‑kontroller (kräver inloggning för att öppna)
 
 ## Tekniker
 - React (Create React App)
@@ -60,14 +61,16 @@ Produkttjänst (Spring Boot ProductService):
 - API‑basväg: `/api/products`
 - Swagger UI: `https://productservice.drillbi.se/swagger-ui/index.html`
 - Endpoints som används i frontend:
-  - GET `GET {BASE}/api/products?page={page}&size={size}&sortBy={field}&sortDir=asc|desc` – paginerad lista (se `ProductList.tsx`)
-  - GET `GET {BASE}/api/products/all` – hämta alla produkter
-  - POST `POST {BASE}/api/products` – skapa ny produkt (kräver JWT i `Authorization: Bearer <token>`). Se `ProductForm.tsx`.
+  - GET `{BASE}/api/products?page={page}&size={size}&sortBy={field}&sortDir=asc|desc` – paginerad lista (se `ProductList.tsx`)
+  - GET `{BASE}/api/products/all` – hämta alla produkter
+  - GET `{BASE}/api/products/{id}` – hämta produkt per id (nu använd i `ProductDetails.tsx` via `productService.getProductById`)
+  - GET `{BASE}/api/products/search?name=&categoryName=&minPrice=&maxPrice=` – server‑sökning (UI faller tillbaka till klientfilter om ej tillgängligt)
+  - POST `{BASE}/api/products` – skapa ny produkt (kräver JWT i `Authorization: Bearer <token>`). Se `ProductForm.tsx`.
 - Stöd som saknas i backend i nuläget (hanteras som stubbar i UI):
   - Uppdatera produkt
   - Ta bort produkt
 
-Sökning i UI sker klient‑side: `productService.searchProducts()` filtrerar lokalt på namn, kategorinamn samt lägsta/högsta pris (min/max) tills ett backend‑sök finns.
+Sökning använder backend‑endpoint när möjligt; fallback är klient‑side filter på namn, kategorinamn samt lägsta/högsta pris (min/max).
 
 ## Routing
 All routing sker med HashRouter.
@@ -75,10 +78,17 @@ All routing sker med HashRouter.
   - Inloggad: visar `UserProfile` och en "Logga ut"‑knapp
   - Utloggad: visar `AuthSwitch` som låter dig växla mellan Registrering och Login
 - `#/products` – produktlista med filterfält (Namn, Kategori, Lägsta, Högsta). URL‑parametrar: `?name=&category=&min=&max=`
-- `#/products/:id` – produktdetaljer
+- `#/products/:id` – produktdetaljer (kräver inloggning)
 - `#/admin/products/new` – formulär för ny produkt (framtida adminflöde)
 
 Se `src/App.tsx` och `src/components/Header.tsx` för navigationslogik. Kundvagnspanelen öppnas via ikonen i Header (CartBadge) och hanteras i `src/components/Cart/Cart.tsx`.
+
+## Order (frontend)
+- Ny sida: Skapa order (`#/orders/new`, kräver inloggning).
+- Listar tillgängliga produkter (aktiva med lager > 0) via ProductService.
+- Använder JWT från localStorage som Authorization: Bearer vid POST mot Order Service.
+- Skickar POST `{BASE}/api/orders` med payload `{ items: [{ productId, quantity }] }`.
+- Vid lyckad skapning visas order-id och kundvagnen töms.
 
 ## Produktfunktioner
 Koden finns under `src/features/products/`:

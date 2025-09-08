@@ -9,6 +9,7 @@ import Footer from './components/Footer';
 import ProductList from './features/products/ProductList';
 import ProductDetails from './features/products/ProductDetails';
 import ProductForm from './features/products/ProductForm';
+import OrderCreatePage from './features/orders/OrderCreatePage';
 import { CartProvider } from './context/CartContext';
 // import CartBadge from './components/Cart/CartBadge';
 import Cart from './components/Cart/Cart';
@@ -50,6 +51,7 @@ function App() {
                         <Route path="/products" element={<ProductList />} />
                         <Route path="/products/:id" element={<ProductDetails />} />
                         <Route path="/admin/products/new" element={<ProductForm />} />
+                        <Route path="/orders/new" element={<OrderCreatePage />} />
                     </Routes>
 
                     <div className="neon-bottom-waves" aria-hidden="true" />

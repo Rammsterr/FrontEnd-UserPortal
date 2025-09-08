@@ -13,10 +13,12 @@ const Cart: React.FC<Props> = ({ open, onClose }) => {
   if (!open) return null;
 
   return (
-    <div role="dialog" aria-label="Kundvagn" aria-modal="true" style={{
-      position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(420px, 95vw)',
+    <>
+      <div onClick={onClose} aria-hidden="true" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.25)', zIndex: 1001 }} />
+      <div role="dialog" aria-label="Kundvagn" aria-modal="true" style={{
+      position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(360px, 92vw)',
       background: 'var(--card-bg, #fff)', boxShadow: '-8px 0 24px rgba(0,0,0,0.2)', padding: '1rem', zIndex: 1002,
-      overflowY: 'auto'
+      overflowY: 'auto', borderTopLeftRadius: 12, borderBottomLeftRadius: 12
     }}>
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h3 style={{ margin: 0 }}>Kundvagn</h3>
@@ -93,6 +95,7 @@ const Cart: React.FC<Props> = ({ open, onClose }) => {
         </>
       )}
     </div>
+    </>
   );
 };
 

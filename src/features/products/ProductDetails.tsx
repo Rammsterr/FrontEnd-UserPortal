@@ -4,11 +4,18 @@ import productService, { ProductResponse, resolveImageUrl, getProductPrimaryImag
 
 // Produktdetaljer – visar detaljerad info om en produkt.
 const ProductDetails: React.FC = () => {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<ProductResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!token) {
+      alert('Du måste vara inloggad för att se produktdetaljer.');
+      window.dispatchEvent(new Event('show-login'));
+      window.location.hash = '/';
+      return;
+    }
     const abort = new AbortController();
     (async () => {
       try {

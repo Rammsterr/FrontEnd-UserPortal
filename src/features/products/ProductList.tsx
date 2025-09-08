@@ -10,6 +10,7 @@ const ProductList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const { addToCart } = useCart();
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   // Läs parametrar från URL
   const nameParam = searchParams.get('name') ?? '';
@@ -154,18 +155,48 @@ const ProductList: React.FC = () => {
           {products.map(p => (
             <li key={p.id} style={{ display: 'grid', gridTemplateColumns: '64px 1fr auto', alignItems: 'center', gap: '0.75rem' }}>
               {/* Bild */}
-              <Link to={`/products/${p.id}`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                {(() => { const img = getProductPrimaryImage(p); if (img) {
-                  return (<img src={resolveImageUrl(img)} alt={p.name} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} />);
-                }
-                return (
-                  <div style={{ width: 64, height: 64, borderRadius: 8, background: 'rgba(0,0,0,0.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>
-                    No img
-                  </div>
-                ); })()}
-              </Link>
+              {/* Bild (blockera klick om ej inloggad) */}
+              {token ? (
+                <Link to={`/products/${p.id}`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {(() => { const img = getProductPrimaryImage(p); if (img) {
+                    return (<img src={resolveImageUrl(img)} alt={p.name} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} />);
+                  }
+                  return (
+                    <div style={{ width: 64, height: 64, borderRadius: 8, background: 'rgba(0,0,0,0.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>
+                      No img
+                    </div>
+                  ); })()}
+                </Link>
+              ) : (
+                <div
+                  onClick={() => { alert('Du måste vara inloggad för att se produktdetaljer.'); window.dispatchEvent(new Event('show-login')); window.location.hash = '/'; }}
+                  aria-disabled="true"
+                  title="Logga in för att se produktdetaljer"
+                  style={{ cursor: 'not-allowed', opacity: 0.7, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  {(() => { const img = getProductPrimaryImage(p); if (img) {
+                    return (<img src={resolveImageUrl(img)} alt={p.name} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} />);
+                  }
+                  return (
+                    <div style={{ width: 64, height: 64, borderRadius: 8, background: 'rgba(0,0,0,0.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>
+                      No img
+                    </div>
+                  ); })()}
+                </div>
+              )}
               {/* Namn */}
-              <Link className="btn-secondary btn-inline" to={`/products/${p.id}`}>{p.name}</Link>
+              {token ? (
+                <Link className="btn-secondary btn-inline" to={`/products/${p.id}`}>{p.name}</Link>
+              ) : (
+                <button
+                  type="button"
+                  className="btn-secondary btn-inline"
+                  aria-disabled
+                  title="Logga in för att se produktdetaljer"
+                  onClick={() => { alert('Du måste vara inloggad för att se produktdetaljer.'); window.dispatchEvent(new Event('show-login')); window.location.hash = '/'; }}
+                  disabled
+                >{p.name}</button>
+              )}
               {/* Åtgärder */}
               <div style={{ display: 'grid', gap: '0.25rem', justifyItems: 'end' }}>
                 <div>{formatPriceSEK(p.price)}</div>
@@ -173,8 +204,18 @@ const ProductList: React.FC = () => {
                   type="button"
                   className="btn-primary btn-inline"
                   aria-label={`Lägg ${p.name} i kundvagnen`}
-                  onClick={() => addToCart({ id: p.id, name: p.name, price: p.price, imageUrl: getProductPrimaryImage(p) ? resolveImageUrl(getProductPrimaryImage(p)!) : undefined })}
-                >Lägg i kundvagn</button>
+                  disabled={!token}
+                  onClick={() => {
+                    const tokenNow = localStorage.getItem('token');
+                    if (!tokenNow) {
+                      alert('Du måste vara inloggad för att lägga till i kundvagnen.');
+                      window.dispatchEvent(new Event('show-login'));
+                      window.location.hash = '/';
+                      return;
+                    }
+                    addToCart({ id: p.id, name: p.name, price: p.price, imageUrl: getProductPrimaryImage(p) ? resolveImageUrl(getProductPrimaryImage(p)!) : undefined });
+                  }}
+                >{token ? 'Lägg i kundvagn' : 'Logga in för att handla'}</button>
               </div>
               {/* Status */}
               {(p.stockQuantity <= 0 || !p.active) && <span style={{marginLeft: 8, color: 'red', whiteSpace: 'nowrap'}}>(Ej tillgänglig)</span>}
