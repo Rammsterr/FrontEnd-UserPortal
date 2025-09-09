@@ -45,7 +45,6 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
         <nav aria-label="Huvudnavigation" style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <Link className="btn-secondary btn-inline" to="/">Hem</Link>
           <Link className="btn-secondary btn-inline" style={{ marginLeft: 8 }} to="/products">Produkter</Link>
-          <Link className="btn-secondary btn-inline" style={{ marginLeft: 8 }} to="/orders/new">Skapa order</Link>
         </nav>
       </div>
       <div style={{ position: 'fixed', top: 'calc(env(safe-area-inset-top, 0px) + 1rem)', right: 'calc(env(safe-area-inset-right, 0px) + 1rem)', display: 'flex', alignItems: 'center', gap: '0.5rem', zIndex: 1000, flexWrap: 'wrap' }}>

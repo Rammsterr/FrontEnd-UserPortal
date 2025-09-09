@@ -88,9 +88,12 @@ const Cart: React.FC<Props> = ({ open, onClose }) => {
               </li>
             ))}
           </ul>
-          <footer style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <footer style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
             <div style={{ fontWeight: 700 }}>Summa: {formatPriceSEK(total)}</div>
-            <button type="button" className="btn-secondary btn-inline" onClick={clearCart}>Töm kundvagn</button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button type="button" className="btn-secondary btn-inline" onClick={clearCart}>Töm kundvagn</button>
+              <a href="#/checkout" className="btn-primary btn-inline">Gå till kassan</a>
+            </div>
           </footer>
         </>
       )}

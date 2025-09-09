@@ -9,7 +9,8 @@ import Footer from './components/Footer';
 import ProductList from './features/products/ProductList';
 import ProductDetails from './features/products/ProductDetails';
 import ProductForm from './features/products/ProductForm';
-import OrderCreatePage from './features/orders/OrderCreatePage';
+// import OrderCreatePage from './features/orders/OrderCreatePage';
+import CheckoutPage from './features/checkout/CheckoutPage';
 import { CartProvider } from './context/CartContext';
 // import CartBadge from './components/Cart/CartBadge';
 import Cart from './components/Cart/Cart';
@@ -29,17 +30,7 @@ function App() {
                     <Routes>
                         <Route path="/" element={token ? (
                             <>
-                                <UserProfile />
-                                <button
-                                    className="btn-primary btn-inline"
-                                    style={{ marginTop: '1rem' }}
-                                    onClick={() => {
-                                        localStorage.removeItem("token");
-                                        window.location.reload(); // enkel omdirigering
-                                    }}
-                                >
-                                    Logga ut
-                                </button>
+                                <ProductList />
                             </>
                         ) : (
                             <>
@@ -51,7 +42,7 @@ function App() {
                         <Route path="/products" element={<ProductList />} />
                         <Route path="/products/:id" element={<ProductDetails />} />
                         <Route path="/admin/products/new" element={<ProductForm />} />
-                        <Route path="/orders/new" element={<OrderCreatePage />} />
+                        <Route path="/checkout" element={<CheckoutPage />} />
                     </Routes>
 
                     <div className="neon-bottom-waves" aria-hidden="true" />
