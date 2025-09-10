@@ -1,21 +1,50 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import formatPriceSEK from '../../utils/formatPrice';
+import { createOrder } from '../orders/orderService';
 
-// Enkel kassa-sida som är separat från kundvagnen
-// Inga order-skapande anrop – endast sammanfattning och nästa steg (placeholder)
+// Kassa-sida: visar sammanfattning och låter användaren skicka order till backend
 const CheckoutPage: React.FC = () => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const { items, total } = useCart();
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const { items, total, clearCart } = useCart();
 
-  if (!token) {
-    return (
-      <section className="auth-form" aria-labelledby="checkout-title">
-        <h2 id="checkout-title" style={{ textAlign: 'center', marginTop: 0 }}>Kassan</h2>
-        <p>Du måste vara inloggad för att komma till kassan.</p>
-      </section>
-    );
-  }
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      // Redirect to login if not logged in
+      window.dispatchEvent(new Event('show-login'));
+      window.location.hash = '/';
+    }
+  }, []);
+
+  const onPlaceOrder = async () => {
+    setError(null);
+    setSuccessMsg(null);
+    if (items.length === 0) { setError('Din kundvagn är tom.'); return; }
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('Du måste vara inloggad för att beställa.');
+      window.dispatchEvent(new Event('show-login'));
+      window.location.hash = '/';
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const payload = { items: items.map(i => ({ productId: i.id, quantity: i.qty })) };
+      const res = await createOrder(payload);
+      const msg = `Tack för din beställning! Order-ID: ${res.id}`;
+      setSuccessMsg(msg);
+      clearCart();
+      // Redirect to order history after short delay
+      setTimeout(() => { window.location.hash = '/orders'; }, 800);
+    } catch (e: any) {
+      setError(e?.message || 'Kunde inte lägga ordern.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <section className="auth-form" aria-labelledby="checkout-title">
@@ -38,9 +67,12 @@ const CheckoutPage: React.FC = () => {
           </ul>
           <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <strong>Summa: {formatPriceSEK(total)}</strong>
-            {/* Placeholder för framtida steg, t.ex. adress/betalning */}
-            <button className="btn-primary btn-inline" type="button" onClick={() => alert('Här kommer betalningssteget senare.')}>Fortsätt</button>
+            <button className="btn-primary btn-inline" type="button" onClick={onPlaceOrder} disabled={submitting}>
+              {submitting ? 'Skickar…' : 'Slutför köp'}
+            </button>
           </div>
+          {error && <p style={{ color: 'red', marginTop: '0.5rem' }}>{error}</p>}
+          {successMsg && <p style={{ color: 'green', marginTop: '0.5rem' }}>{successMsg}</p>}
         </>
       )}
     </section>
