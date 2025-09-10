@@ -45,6 +45,9 @@ function App() {
                         <Route path="/checkout" element={<CheckoutPage />} />
                     </Routes>
 
+                    {/* Background visual layers (purely decorative) */}
+                    <div className="bg-gradient" aria-hidden="true" />
+                    <div className="particle-field" aria-hidden="true" />
                     <div className="neon-bottom-waves" aria-hidden="true" />
                     <Footer />
                 </Router>
