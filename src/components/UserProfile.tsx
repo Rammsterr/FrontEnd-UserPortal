@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { orderApiBaseUrl } from '../features/orders/orderService';
 
 interface UserProfileData {
     email: string;
@@ -17,6 +18,21 @@ const UserProfile: React.FC = () => {
     const [lastNameEdit, setLastNameEdit] = useState('');
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
+
+    // Orderhistorik state
+    type OrderHistoryItem = {
+        id: string;
+        createdAt?: string;
+        orderDate?: string;
+        status?: string;
+        totalAmount?: number;
+        total?: number;
+        currency?: string;
+        items?: Array<{ productId?: string; name?: string; productName?: string; quantity?: number; price?: number }>;
+    };
+    const [orders, setOrders] = useState<OrderHistoryItem[]>([]);
+    const [ordersLoading, setOrdersLoading] = useState(true);
+    const [ordersError, setOrdersError] = useState<string | null>(null);
 
     // Hämta profil
     const fetchUser = async () => {
@@ -52,6 +68,44 @@ const UserProfile: React.FC = () => {
             setLastNameEdit(user.lastName ?? '');
         }
     }, [user]);
+
+    // Hämta orderhistorik till profilsidan
+    useEffect(() => {
+        let aborted = false;
+        const fetchOrders = async () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setOrdersError('Du måste vara inloggad för att se orderhistorik.');
+                setOrdersLoading(false);
+                return;
+            }
+            try {
+                setOrdersLoading(true);
+                setOrdersError(null);
+                const res = await fetch(`${orderApiBaseUrl}/api/orders/history`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) {
+                    let msg = `Kunde inte hämta orderhistorik (${res.status})`;
+                    try { const b = await res.json(); msg = b?.message || b?.error || msg; } catch {}
+                    throw new Error(msg);
+                }
+                const data = await res.json();
+                if (aborted) return;
+                const arr = Array.isArray(data) ? data
+                    : Array.isArray((data as any)?.orders) ? (data as any).orders
+                    : Array.isArray((data as any)?.content) ? (data as any).content : [];
+                setOrders(arr as OrderHistoryItem[]);
+            } catch (e: any) {
+                if (!aborted) setOrdersError(e?.message || 'Tekniskt fel vid hämtning.');
+            } finally {
+                if (!aborted) setOrdersLoading(false);
+            }
+        };
+        fetchOrders();
+        return () => { aborted = true; };
+    }, []);
 
     // Spara endast ändrade fält
     const onSave = async () => {
@@ -166,6 +220,54 @@ const UserProfile: React.FC = () => {
                     </button>
                     {message && <p style={{ marginTop: '0.5rem' }}>{message}</p>}
                 </>
+            )}
+
+            <hr style={{ margin: '1rem 0', border: 'none', borderTop: '1px solid rgba(0,0,0,0.08)' }} />
+            <h3>Orderhistorik</h3>
+            {ordersLoading ? (
+                <p>Laddar…</p>
+            ) : ordersError ? (
+                <p style={{ color: 'red' }}>{ordersError}</p>
+            ) : orders.length === 0 ? (
+                <p>Du har inga tidigare ordrar.</p>
+            ) : (
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '0.75rem' }}>
+                    {orders.map(o => {
+                        const iso = o.createdAt || o.orderDate;
+                        const d = iso ? new Date(iso) : null;
+                        const when = d && !isNaN(d.getTime()) ? d.toLocaleString() : '';
+                        const sum = typeof o.totalAmount === 'number' ? o.totalAmount : (typeof o.total === 'number' ? o.total : 0);
+                        return (
+                            <li key={o.id} style={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, padding: '0.75rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '0.5rem' }}>
+                                    <div>
+                                        <div style={{ fontWeight: 600 }}>Order #{o.id}</div>
+                                        <div style={{ opacity: 0.7 }}>{when}</div>
+                                    </div>
+                                    <div style={{ textAlign: 'right' }}>
+                                        {o.status && <div style={{ fontSize: 12, opacity: 0.8 }}>Status: {o.status}</div>}
+                                        <div style={{ fontWeight: 700 }}>{sum.toLocaleString('sv-SE', { style: 'currency', currency: 'SEK' })}</div>
+                                    </div>
+                                </div>
+                                {Array.isArray(o.items) && o.items.length > 0 && (
+                                    <ul style={{ listStyle: 'none', padding: 0, marginTop: '0.5rem', display: 'grid', gap: '0.25rem' }}>
+                                        {o.items.map((it, idx) => (
+                                            <li key={idx} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <span>
+                                                    {it.productName || it.name || it.productId || 'Produkt'}
+                                                    {typeof it.quantity === 'number' ? ` × ${it.quantity}` : ''}
+                                                </span>
+                                                {typeof it.price === 'number' && (
+                                                    <span>{(it.price * (it.quantity || 1)).toLocaleString('sv-SE', { style: 'currency', currency: 'SEK' })}</span>
+                                                )}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </li>
+                        );
+                    })}
+                </ul>
             )}
         </div>
     );

@@ -12,8 +12,7 @@ const OrdersPage: React.FC = () => {
     const token = localStorage.getItem('token');
     if (!token) {
       // Redirect to login page when not authenticated
-      window.dispatchEvent(new Event('show-login'));
-      window.location.hash = '/';
+      window.location.hash = '/login';
       return;
     }
 
@@ -51,7 +50,7 @@ const OrdersPage: React.FC = () => {
     <section className="auth-form" aria-labelledby="orders-title">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 id="orders-title" style={{ marginTop: 0 }}>Orderhistorik</h2>
-        <Link to="/orders/new" className="btn-primary btn-inline">Skapa ny order</Link>
+        <Link to="/checkout" className="btn-primary btn-inline">Gå till kassan</Link>
       </div>
       {loading ? (
         <p>Laddar…</p>
