@@ -35,9 +35,9 @@ Detta är en React‑app för användarportal med registrering, inloggning och p
 ## Kom igång
 1. Installera beroenden:
    npm install
-2. Sätt miljövariabler i en `.env` i projektroten vid behov:
-   - REACT_APP_PRODUCT_API_BASE_URL=https://productservice.drillbi.se
-   - REACT_APP_PRODUCT_ASSETS_BASE_URL=https://productservice.drillbi.se/uploads  # om bilderna serveras under /uploads
+2. Sätt miljövariabler i en `.env` i projektroten vid behov (lägg inte `.env` i versionshantering):
+  - REACT_APP_PRODUCT_API_BASE_URL=https://api.example.com            # Exempelvärde – använd din egen bas‑URL
+  - REACT_APP_PRODUCT_ASSETS_BASE_URL=https://assets.example.com/uploads  # Exempelvärde
 3. Starta utvecklingsserver:
    npm start
 4. Öppna http://localhost:3000
@@ -49,27 +49,24 @@ Bilduppladdning:
 - Använd formuläret "Ny produkt" för att välja och ladda upp bilder innan du sparar produkten.
 
 ## Miljövariabler och API‑endpoints
+Säkerhetsnotis: Undvik att exponera produktionsdomäner, interna endpoints eller tokens i publika dokument. Använd miljövariabler och hänvisa till intern dokumentation.
+
 Användartjänst (User Service):
-- Login: `POST https://userservice.drillbi.se/auth/login` (se `src/components/Login/Login.tsx`)
-- Registrering: `POST https://userservice.drillbi.se/auth/register` (se `src/components/Register.tsx`)
-- Profil: `GET https://userservice.drillbi.se/me` och `PUT https://userservice.drillbi.se/me/settings` med `Authorization: Bearer <token>`
-- Appen förväntar sig `accessToken` i svaret och lagrar den i `localStorage` som `token`. 
+- Login: `POST {USER_API_BASE}/auth/login` (se `src/components/Login/Login.tsx`)
+- Registrering: `POST {USER_API_BASE}/auth/register` (se `src/components/Register.tsx`)
+- Profil: `GET {USER_API_BASE}/me` och `PUT {USER_API_BASE}/me/settings` med `Authorization: Bearer <token>`
+- Appen förväntar sig `accessToken` i svaret och lagrar den i `localStorage` som `token`.
 
-Produkttjänst (Spring Boot ProductService):
-- Bas‑URL: miljövariabeln `REACT_APP_PRODUCT_API_BASE_URL` (default: `https://productservice.drillbi.se`)
-- API‑basväg: `/api/products`
-- Swagger UI: `https://productservice.drillbi.se/swagger-ui/index.html`
-- Endpoints som används i frontend:
-  - GET `{BASE}/api/products?page={page}&size={size}&sortBy={field}&sortDir=asc|desc` – paginerad lista (se `ProductList.tsx`)
-  - GET `{BASE}/api/products/all` – hämta alla produkter
-  - GET `{BASE}/api/products/{id}` – hämta produkt per id (nu använd i `ProductDetails.tsx` via `productService.getProductById`)
-  - GET `{BASE}/api/products/search?name=&categoryName=&minPrice=&maxPrice=` – server‑sökning (UI faller tillbaka till klientfilter om ej tillgängligt)
-  - POST `{BASE}/api/products` – skapa ny produkt (kräver JWT i `Authorization: Bearer <token>`). Se `ProductForm.tsx`.
-- Stöd som saknas i backend i nuläget (hanteras som stubbar i UI):
-  - Uppdatera produkt
-  - Ta bort produkt
+Produkttjänst (ProductService):
+- Bas‑URL: via miljövariabeln `REACT_APP_PRODUCT_API_BASE_URL` (ingen default i README; konfigurera per miljö)
+- API‑basväg: till exempel `/api/products`
+- Exempel på endpoints som används i frontend (se koden i `src/features/products/`):
+  - GET `{BASE}/api/products?page={page}&size={size}&sortBy={field}&sortDir=asc|desc` – lista
+  - GET `{BASE}/api/products/{id}` – detalj
+  - GET `{BASE}/api/products/search?name=&categoryName=&minPrice=&maxPrice=` – sökning
+  - POST `{BASE}/api/products` – skapa (kräver JWT i `Authorization: Bearer <token>`)
 
-Sökning använder backend‑endpoint när möjligt; fallback är klient‑side filter på namn, kategorinamn samt lägsta/högsta pris (min/max).
+Observera: För fullständig och uppdaterad API‑referens, se backendens dokumentation (intern). Fallback till enkel klient‑side filtrering används i UI om serversök inte är tillgänglig.
 
 ## Routing
 All routing sker med HashRouter.
@@ -130,4 +127,4 @@ Koden finns under `src/features/products/`:
 - För att skapa produkter krävs att du är inloggad – token måste finnas i `localStorage` som `token`.
 - HashRouter används för att undvika serverkonfiguration vid statisk hosting.
 
-Senast uppdaterad: 2025-09-11 13:08
+Senast uppdaterad: 2025-09-11 13:12
