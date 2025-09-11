@@ -9,7 +9,7 @@ Detta är en React‑app för användarportal med registrering, inloggning och p
 - Kom igång (installation och start)
 - Miljövariabler och API‑endpoints
 - Routing
-- Order (frontend)
+- Checkout och Orderhistorik
 - Produktfunktioner
 - Kundvagn (frontend)
 - Tillgänglighet och UX
@@ -73,21 +73,23 @@ Sökning använder backend‑endpoint när möjligt; fallback är klient‑side 
 
 ## Routing
 All routing sker med HashRouter.
-- `#/` –
-  - Inloggad: visar `UserProfile` och en "Logga ut"‑knapp
-  - Utloggad: visar `AuthSwitch` som låter dig växla mellan Registrering och Login
+- `#/` – startsida med hero, produktgalleri och inloggnings/registreringsmodal vid behov
+  - Inloggad: visar profilgenvägar, kan lägga i kundvagn och gå till detaljer
+  - Utloggad: kan bläddra produkter; vid skyddade åtgärder öppnas login‑modal
 - `#/products` – produktlista med filterfält (Namn, Kategori, Lägsta, Högsta). URL‑parametrar: `?name=&category=&min=&max=`
 - `#/products/:id` – produktdetaljer (kräver inloggning)
 - `#/admin/products/new` – formulär för ny produkt (framtida adminflöde)
+- `#/checkout` – kassa (skapa order från kundvagnen, kräver inloggning)
+- `#/orders` – orderhistorik för inloggad användare
 
 Se `src/App.tsx` och `src/components/Header.tsx` för navigationslogik. Kundvagnspanelen öppnas via ikonen i Header (CartBadge) och hanteras i `src/components/Cart/Cart.tsx`.
 
-## Order (frontend)
-- Ny sida: Skapa order (`#/orders/new`, kräver inloggning).
-- Listar tillgängliga produkter (aktiva med lager > 0) via ProductService.
-- Använder JWT från localStorage som Authorization: Bearer vid POST mot Order Service.
-- Skickar POST `{BASE}/api/orders` med payload `{ items: [{ productId, quantity }] }`.
-- Vid lyckad skapning visas order-id och kundvagnen töms.
+## Checkout och Orderhistorik
+- Checkout: `#/checkout` – skapar order baserat på kundvagnens innehåll (kräver inloggning).
+  - Använder JWT från `localStorage` som `Authorization: Bearer <token>` vid POST mot Order Service.
+  - Skickar POST `{BASE}/api/orders` med payload `{ items: [{ productId, quantity }] }`.
+  - Vid lyckad skapning visas order‑id och kundvagnen töms.
+- Orderhistorik: `#/orders` – listar tidigare ordrar för inloggad användare.
 
 ## Produktfunktioner
 Koden finns under `src/features/products/`:
@@ -128,4 +130,4 @@ Koden finns under `src/features/products/`:
 - För att skapa produkter krävs att du är inloggad – token måste finnas i `localStorage` som `token`.
 - HashRouter används för att undvika serverkonfiguration vid statisk hosting.
 
-Senast uppdaterad: 2025-09-05 10:34
+Senast uppdaterad: 2025-09-11 13:08
