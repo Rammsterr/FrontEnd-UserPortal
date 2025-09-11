@@ -9,7 +9,7 @@ import Footer from './components/Footer';
 import ProductList from './features/products/ProductList';
 import ProductDetails from './features/products/ProductDetails';
 import ProductForm from './features/products/ProductForm';
-// import OrderCreatePage from './features/orders/OrderCreatePage';
+import OrderCreatePage from './features/orders/OrderCreatePage';
 import CheckoutPage from './features/checkout/CheckoutPage';
 import OrdersPage from './features/orders/OrdersPage';
 import { CartProvider } from './context/CartContext';
@@ -45,6 +45,7 @@ function App() {
                         <Route path="/admin/products/new" element={<ProductForm />} />
                         <Route path="/checkout" element={<CheckoutPage />} />
                         <Route path="/orders" element={<OrdersPage />} />
+                        <Route path="/orders/new" element={<OrderCreatePage />} />
                     </Routes>
 
                     {/* Background visual layers (purely decorative) */}

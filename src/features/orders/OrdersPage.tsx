@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { getOrderHistory, OrderHistoryItem } from './orderService';
 import formatPriceSEK from '../../utils/formatPrice';
 
@@ -48,7 +49,10 @@ const OrdersPage: React.FC = () => {
 
   return (
     <section className="auth-form" aria-labelledby="orders-title">
-      <h2 id="orders-title" style={{ textAlign: 'center', marginTop: 0 }}>Orderhistorik</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 id="orders-title" style={{ marginTop: 0 }}>Orderhistorik</h2>
+        <Link to="/orders/new" className="btn-primary btn-inline">Skapa ny order</Link>
+      </div>
       {loading ? (
         <p>Laddar…</p>
       ) : error ? (
@@ -59,12 +63,15 @@ const OrdersPage: React.FC = () => {
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: '0.75rem' }}>
           {orders.map(o => (
             <li key={o.id} style={{ border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, padding: '0.75rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '0.5rem' }}>
                 <div>
                   <div style={{ fontWeight: 600 }}>Order #{o.id}</div>
                   <div style={{ opacity: 0.7 }}>{getOrderDate(o)}</div>
                 </div>
-                <div style={{ fontWeight: 600 }}>{formatPriceSEK(getOrderTotal(o))}</div>
+                <div style={{ textAlign: 'right' }}>
+                  {o.status && <div style={{ fontSize: 12, opacity: 0.8 }}>Status: {o.status}</div>}
+                  <div style={{ fontWeight: 600 }}>{formatPriceSEK(getOrderTotal(o))}</div>
+                </div>
               </div>
               {Array.isArray(o.items) && o.items.length > 0 && (
                 <ul style={{ listStyle: 'none', padding: 0, marginTop: '0.5rem', display: 'grid', gap: '0.25rem' }}>

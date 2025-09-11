@@ -13,6 +13,7 @@ export interface OrderHistoryItem {
   id: string;
   createdAt?: string;
   orderDate?: string;
+  status?: string;
   totalAmount?: number;
   total?: number;
   currency?: string;
@@ -44,13 +45,22 @@ export async function createOrder(req: CreateOrderRequest): Promise<CreateOrderR
 export async function getOrderHistory(): Promise<OrderHistoryItem[]> {
   const token = localStorage.getItem('token');
   if (!token) throw new Error('Du måste vara inloggad för att visa orderhistorik.');
-  const res = await fetch(`${orderApiBaseUrl}/api/orders/history`, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${token}`
-    }
-  });
+
+  async function fetchHistory(url: string): Promise<Response> {
+    return fetch(url, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+    });
+  }
+
+  // Primary: per requirement, try GET /api/orders first
+  let res = await fetchHistory(`${orderApiBaseUrl}/api/orders`);
+
+  // Fallback to legacy /history if needed
+  if (!res.ok && (res.status === 404 || res.status === 405)) {
+    res = await fetchHistory(`${orderApiBaseUrl}/api/orders/history`);
+  }
+
   if (!res.ok) {
     let msg = `Kunde inte hämta orderhistorik (${res.status})`;
     try { const body = await res.json(); msg = body?.message || body?.error || msg; } catch {}
@@ -58,7 +68,6 @@ export async function getOrderHistory(): Promise<OrderHistoryItem[]> {
   }
   const data = await res.json();
   if (Array.isArray(data)) return data as OrderHistoryItem[];
-  // Some backends might wrap in { orders: [...] } or { content: [...] }
   if (Array.isArray((data as any)?.orders)) return (data as any).orders as OrderHistoryItem[];
   if (Array.isArray((data as any)?.content)) return (data as any).content as OrderHistoryItem[];
   return [];
