@@ -69,7 +69,7 @@ const Home: React.FC = () => {
       {/* Hero / Banner */}
       <section className="hero-card" aria-label="Hero">
         <div className="hero-content">
-          <h2 className="hero-title">VaruVansinne 🤪</h2>
+          <h2 className="hero-title">VaruVansinne Deluxe ✨🤘</h2>
           <p className="hero-desc">Bläddra bland produkter, lägg i kundvagnen och checka ut. Enkelt och smidigt.</p>
           <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link className="btn-primary btn-inline" to="/products">Bläddra produkter</Link>

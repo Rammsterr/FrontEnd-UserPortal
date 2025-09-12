@@ -637,6 +637,30 @@ body.dark-theme .product-card:hover {
     font-size: clamp(2.2rem, 3.2vw + 0.6rem, 3rem);
     font-weight: 700;
     letter-spacing: 0.01em;
+    line-height: 1.1;
+    background-image: linear-gradient(90deg, #111111, #00a6c8, #ff2d95, #8a2be2, #111111);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: titleShimmer 10s linear infinite;
+}
+
+/* Dark theme variant: brighter neon sweep */
+body.dark-theme .hero-title {
+    background-image: linear-gradient(90deg, #ffffff, #00e5ff, #ff3ea5, #8250ff, #ffffff);
+}
+
+/* Faster on hover for a bit of flair (no layout shift) */
+.hero-title:hover { animation-duration: 6s; }
+
+@keyframes titleShimmer {
+    0% { background-position: 0% 0; }
+    100% { background-position: 100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-title { animation: none !important; }
 }
 .hero-desc {
     margin: 0;
