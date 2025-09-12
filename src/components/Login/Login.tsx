@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import '../../Authform.css';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -23,8 +25,23 @@ const Login = () => {
                     alert('Inloggning misslyckades: Ogiltigt svar från servern.');
                     return;
                 }
+                // Spara token
                 localStorage.setItem('token', token);
-                window.location.reload();
+                // Spara användarinfo om den finns
+                try {
+                    const userInfo = data.user || {
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        email: data.email || email
+                    };
+                    if (userInfo && (userInfo.firstName || userInfo.lastName || userInfo.email)) {
+                        localStorage.setItem('user', JSON.stringify(userInfo));
+                    }
+                } catch {}
+                // Signalera att auth-state har ändrats
+                window.dispatchEvent(new Event('auth-changed'));
+                // Redirect to home after successful login
+                navigate('/');
                 alert('Inloggning lyckades!');
             } else {
                 alert('Fel användarnamn eller lösenord');

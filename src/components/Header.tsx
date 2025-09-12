@@ -5,19 +5,53 @@ import CartBadge from './Cart/CartBadge';
 
  type HeaderProps = { onCartClick?: () => void };
 const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  // Keep token in React state so UI reacts immediately when it changes
+  const [token, setToken] = useState<string | null>(
+    typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  );
   const [displayName, setDisplayName] = useState<string | null>(null);
+
+  // Subscribe to storage and custom auth-changed events to stay in sync
+  useEffect(() => {
+    const updateFromStorage = () => {
+      const t = localStorage.getItem('token');
+      setToken(t);
+    };
+    // Listen to both same-tab custom event and cross-tab storage changes
+    const onAuthChanged = () => updateFromStorage();
+    window.addEventListener('auth-changed', onAuthChanged as EventListener);
+    window.addEventListener('storage', updateFromStorage);
+    // Also check once on mount in case something changed before
+    updateFromStorage();
+    return () => {
+      window.removeEventListener('auth-changed', onAuthChanged as EventListener);
+      window.removeEventListener('storage', updateFromStorage);
+    };
+  }, []);
 
   // Fetch a lightweight user identity to show name in header
   useEffect(() => {
     let aborted = false;
     const fetchMe = async () => {
       if (!token) { setDisplayName(null); return; }
+      // Prefill display name from stored user data (if present) for instant feedback
+      try {
+        const raw = localStorage.getItem('user');
+        if (raw) {
+          const u = JSON.parse(raw) as { firstName?: string; lastName?: string; email?: string };
+          const fn0 = (u.firstName || '').trim();
+          const ln0 = (u.lastName || '').trim();
+          const name0 = [fn0, ln0].filter(Boolean).join(' ');
+          if (name0 || u.email) {
+            setDisplayName(name0 || u.email || '');
+          }
+        }
+      } catch { /* ignore parse errors */ }
       try {
         const res = await fetch('https://userservice.drillbi.se/me', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        if (!res.ok) { setDisplayName(null); return; }
+        if (!res.ok) { /* keep any prefilled name, but ensure we don't show stale */ return; }
         const data: { firstName?: string; lastName?: string; email?: string } = await res.json();
         if (aborted) return;
         const fn = (data.firstName || '').trim();
@@ -25,12 +59,20 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
         const name = [fn, ln].filter(Boolean).join(' ');
         setDisplayName(name || data.email || '');
       } catch {
-        if (!aborted) setDisplayName(null);
+        // Ignore network errors; prefilled name (if any) remains
       }
     };
     fetchMe();
     return () => { aborted = true; };
   }, [token]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    // Optionally clear any stored user info
+    localStorage.removeItem('user');
+    // Notify app about auth change
+    window.dispatchEvent(new Event('auth-changed'));
+  };
 
   return (
     <header style={{
@@ -44,37 +86,58 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
         <h1 className="page-title" style={{ margin: 0 }}>🛍️ E-commerce Integration</h1>
         <nav aria-label="Huvudnavigation" style={{ marginTop: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           <Link className="btn-secondary btn-inline" to="/">Hem</Link>
+          <Link className="btn-secondary btn-inline" style={{ marginLeft: 8 }} to="/products">Produkter</Link>
+          <Link className="btn-secondary btn-inline" style={{ marginLeft: 8 }} to="/checkout">Kassa</Link>
           {token ? (
-            <>
-              <Link className="btn-secondary btn-inline" style={{ marginLeft: 8 }} to="/products">Produkter</Link>
-              <Link className="btn-secondary btn-inline" style={{ marginLeft: 8 }} to="/checkout">Kassan</Link>
-              <Link className="btn-secondary btn-inline" style={{ marginLeft: 8 }} to="/profile">Profil</Link>
-              <button
-                className="btn-secondary btn-inline"
-                style={{ marginLeft: 8 }}
-                onClick={() => { localStorage.removeItem('token'); window.location.reload(); }}
-              >Logga ut</button>
-            </>
-          ) : (
-            <>
-              {/* När man inte är inloggad: visa Logga in/Registrera som länkar till dedikerade sidor */}
-              <Link
-                className="btn-secondary btn-inline"
-                style={{ marginLeft: 8 }}
-                to="/login"
-              >Logga in</Link>
-              <Link
-                className="btn-secondary btn-inline"
-                style={{ marginLeft: 8 }}
-                to="/register"
-              >Registrera</Link>
-            </>
-          )}
+            <Link className="btn-secondary btn-inline" style={{ marginLeft: 8 }} to="/profile">Profil</Link>
+          ) : null}
         </nav>
       </div>
       <div style={{ position: 'fixed', top: 'calc(env(safe-area-inset-top, 0px) + 1rem)', right: 'calc(env(safe-area-inset-right, 0px) + 1rem)', display: 'flex', alignItems: 'center', gap: '0.5rem', zIndex: 1000, flexWrap: 'wrap' }}>
         {/* Flytta kundvagn + auth lite åt vänster genom att ha dem i en egen grupp och lämna plats till ThemeToggle längst till höger */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginRight: '2.75rem', flexWrap: 'wrap' }}>
+          {token ? (
+            <button
+              className="btn-secondary btn-inline"
+              style={{ padding: '0.3rem 0.5rem', fontSize: '0.85rem' }}
+              aria-label="Logga ut"
+              title="Logga ut"
+              onClick={handleLogout}
+            >Logga ut</button>
+          ) : null}
+          {!token ? (
+            <>
+              <Link
+                className="btn-secondary btn-inline"
+                style={{ padding: '0.3rem 0.5rem', fontSize: '0.85rem' }}
+                to="/login"
+                aria-label="Logga in"
+                title="Logga in"
+              >Logga in</Link>
+              <Link
+                className="btn-secondary btn-inline"
+                style={{ padding: '0.3rem 0.5rem', fontSize: '0.85rem' }}
+                to="/register"
+                aria-label="Registrera"
+                title="Registrera"
+              >Registrera</Link>
+            </>
+          ) : null}
+          {token && displayName ? (
+            <div
+              title={displayName}
+              style={{
+                fontSize: '0.95rem',
+                fontWeight: 600,
+                color: 'inherit',
+                opacity: 0.9,
+                maxWidth: '20ch',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >Hej, {displayName}</div>
+          ) : null}
           <CartBadge onClick={onCartClick} />
           {/* Auth-knappar flyttade till navbaren för att undvika dubbletter. Lämna endast kundvagn här. */}
         </div>
