@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import formatPriceSEK from '../../utils/formatPrice';
-import { createOrder } from '../orders/orderService';
+import { purchase } from '../orders/orderService';
 
 // Kassa-sida: visar sammanfattning och låter användaren skicka order till backend
 const CheckoutPage: React.FC = () => {
@@ -31,8 +31,9 @@ const CheckoutPage: React.FC = () => {
     setSubmitting(true);
     try {
       const payload = { items: items.map(i => ({ productId: i.id, quantity: i.qty })) };
-      const res = await createOrder(payload);
-      const msg = `Tack för din beställning! Order-ID: ${res.id}`;
+      const res = await purchase(payload);
+      const ordNum = res.orderNumber ? ` (Ordernummer: ${res.orderNumber})` : '';
+      const msg = `Tack för ditt köp! Order-ID: ${res.orderId}${ordNum}`;
       setSuccessMsg(msg);
       clearCart();
       // Redirect to order history after short delay

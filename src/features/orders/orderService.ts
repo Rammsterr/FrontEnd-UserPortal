@@ -1,13 +1,18 @@
 // Order Service client
 // Assumptions:
 // - Base URL configured via REACT_APP_ORDER_API_BASE_URL, fallback to https://orderservice.drillbi.se
-// - Endpoint to create order: POST /api/orders with Authorization: Bearer <token>
-// - Endpoint to get history: GET /api/orders/history (JWT)
-// - Payload shape: { items: [{ productId: string, quantity: number }]} and optional notes/shipping data later
+// - New purchase endpoint per OpenAPI: POST /api/orders/purchase (JWT) returns PurchaseResponse
+// - Legacy create order endpoint remains for backward compatibility
+// - History: GET /api/orders (or /api/orders/history fallback)
+// - Common payload: { items: [{ productId: string, quantity: number }] }
 
 export interface OrderItemRequest { productId: string; quantity: number; }
 export interface CreateOrderRequest { items: OrderItemRequest[]; }
 export interface CreateOrderResponse { id: string; status?: string; totalAmount?: number; currency?: string; message?: string; }
+
+// New types based on OpenAPI example
+export interface PurchaseRequest { items: OrderItemRequest[] }
+export interface PurchaseResponse { orderId: string; orderNumber?: string; totalAmount?: number }
 
 export interface OrderHistoryItem {
   id: string;
@@ -21,6 +26,32 @@ export interface OrderHistoryItem {
 }
 
 export const orderApiBaseUrl = process.env.REACT_APP_ORDER_API_BASE_URL || 'https://orderservice.drillbi.se';
+
+export async function purchase(req: PurchaseRequest): Promise<PurchaseResponse> {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('Missing bearer token'); // match 400 example detail
+  const res = await fetch(`${orderApiBaseUrl}/api/orders/purchase`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(req)
+  });
+  if (!res.ok) {
+    // Try to parse RFC 7807 problem+json
+    try {
+      const body = await res.json();
+      const detail = body?.detail || body?.message || body?.error;
+      if (detail) throw new Error(detail);
+    } catch (_) {
+      // ignore parse error and fallback
+    }
+    throw new Error(`Köp misslyckades (${res.status})`);
+  }
+  return await res.json();
+}
 
 export async function createOrder(req: CreateOrderRequest): Promise<CreateOrderResponse> {
   const token = localStorage.getItem('token');
