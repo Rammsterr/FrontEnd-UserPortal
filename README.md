@@ -102,6 +102,7 @@ Koden finns under `src/features/products/`:
 - Tydlig knapp för "Logga ut" som endast visas när token finns
 - Textfeedback vid autentiseringsflöden
 - Tema‑växling via `ThemeToggle` (i Header). Knappar för kundvagn använder aria‑label och qty‑kontroller har spärrar (min 1, max 99).
+- Startsidan har nu hero‑rubriken "VaruVansinne Deluxe ✨🤘" med en subtil, prestandasnål färgshimmer. Animeringen respekterar `prefers-reduced-motion` och stängs av för användare som föredrar mindre rörelse.
 
 ## Scripts
 - `npm start` – startar dev‑server
@@ -127,4 +128,4 @@ Koden finns under `src/features/products/`:
 - För att skapa produkter krävs att du är inloggad – token måste finnas i `localStorage` som `token`.
 - HashRouter används för att undvika serverkonfiguration vid statisk hosting.
 
-Senast uppdaterad: 2025-09-11 13:12
+Senast uppdaterad: 2025-09-12 12:43
