@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../Authform.css';
 
 const Register = () => {
@@ -7,6 +8,7 @@ const Register = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
+    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,9 +40,8 @@ const Register = () => {
 
                 alert('Registrering lyckades! Du kan nu logga in.');
 
-                // Navigate to home and ask AuthSwitch to show the Login form
-                window.location.hash = '/';
-                window.dispatchEvent(new Event('show-login'));
+                // Redirect to the login page per requirement
+                navigate('/login');
 
             } else {
                 let message = 'Registreringen misslyckades.';
