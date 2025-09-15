@@ -1,17 +1,16 @@
 // Order Service client
 // Assumptions:
 // - Base URL configured via REACT_APP_ORDER_API_BASE_URL, fallback to https://orderservice.drillbi.se
-// - New purchase endpoint per OpenAPI: POST /api/orders/purchase (JWT) returns PurchaseResponse
+// - Purchase endpoint: POST /api/orders/purchase (JWT) expects { productId, quantity }
 // - Legacy create order endpoint remains for backward compatibility
 // - History: GET /api/orders (or /api/orders/history fallback)
-// - Common payload: { items: [{ productId: string, quantity: number }] }
 
 export interface OrderItemRequest { productId: string; quantity: number; }
 export interface CreateOrderRequest { items: OrderItemRequest[]; }
 export interface CreateOrderResponse { id: string; status?: string; totalAmount?: number; currency?: string; message?: string; }
 
-// New types based on OpenAPI example
-export interface PurchaseRequest { items: OrderItemRequest[] }
+// Purchase request must match backend exactly
+export interface PurchaseRequest { productId: string; quantity: number }
 export interface PurchaseResponse { orderId: string; orderNumber?: string; totalAmount?: number }
 
 export interface OrderHistoryItem {
@@ -29,20 +28,38 @@ export const orderApiBaseUrl = process.env.REACT_APP_ORDER_API_BASE_URL || 'http
 
 export async function purchase(req: PurchaseRequest): Promise<PurchaseResponse> {
   const token = localStorage.getItem('token');
-  if (!token) throw new Error('Missing bearer token'); // match 400 example detail
+  if (!token) throw new Error('Missing bearer token');
+
+  const headers = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': `Bearer ${token}`
+  } as const;
+
+  // Log request body and headers
+  try {
+    console.log('[OrderService] POST /api/orders/purchase request', {
+      url: `${orderApiBaseUrl}/api/orders/purchase`,
+      headers,
+      body: req
+    });
+  } catch {}
+
   const res = await fetch(`${orderApiBaseUrl}/api/orders/purchase`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
+    mode: 'cors',
+    headers,
     body: JSON.stringify(req)
   });
+
+  const text = await res.text();
+  // Log response status and text
+  try { console.log('[OrderService] Response', { status: res.status, ok: res.ok, text }); } catch {}
+
   if (!res.ok) {
-    // Try to parse RFC 7807 problem+json
+    // Try to parse error from response text (problem+json or generic)
     try {
-      const body = await res.json();
+      const body = JSON.parse(text);
       const detail = body?.detail || body?.message || body?.error;
       if (detail) throw new Error(detail);
     } catch (_) {
@@ -50,7 +67,13 @@ export async function purchase(req: PurchaseRequest): Promise<PurchaseResponse> 
     }
     throw new Error(`Köp misslyckades (${res.status})`);
   }
-  return await res.json();
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    // If backend returned empty body
+    return { orderId: '' } as PurchaseResponse;
+  }
 }
 
 export async function createOrder(req: CreateOrderRequest): Promise<CreateOrderResponse> {

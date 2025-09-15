@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import formatPriceSEK from '../../utils/formatPrice';
-import { purchase } from '../orders/orderService';
+import { purchase, createOrder } from '../orders/orderService';
 
 // Kassa-sida: visar sammanfattning och låter användaren skicka order till backend
 const CheckoutPage: React.FC = () => {
@@ -30,11 +30,21 @@ const CheckoutPage: React.FC = () => {
     }
     setSubmitting(true);
     try {
-      const payload = { items: items.map(i => ({ productId: i.id, quantity: i.qty })) };
-      const res = await purchase(payload);
-      const ordNum = res.orderNumber ? ` (Ordernummer: ${res.orderNumber})` : '';
-      const msg = `Tack för ditt köp! Order-ID: ${res.orderId}${ordNum}`;
-      setSuccessMsg(msg);
+      if (items.length > 1) {
+        // Flerprodukter: använd legacy createOrder med items[]
+        const payload = { items: items.map(i => ({ productId: i.id, quantity: i.qty })) };
+        const res = await createOrder(payload);
+        const msg = `Tack för ditt köp! Order skapad med ID: ${res.id}`;
+        setSuccessMsg(msg);
+      } else {
+        // Enstaka produkt: använd nya purchase-endpointen som kräver exakt { productId, quantity }
+        const item = items[0];
+        const payload = { productId: item.id, quantity: item.qty };
+        const res = await purchase(payload);
+        const ordNum = res.orderNumber ? ` (Ordernummer: ${res.orderNumber})` : '';
+        const msg = `Tack för ditt köp! Order-ID: ${res.orderId}${ordNum}`;
+        setSuccessMsg(msg);
+      }
       clearCart();
       // Redirect to order history after short delay
       setTimeout(() => { window.location.hash = '/orders'; }, 800);
@@ -55,7 +65,15 @@ const CheckoutPage: React.FC = () => {
         <>
           <ul style={{ listStyle: 'none', padding: 0, marginTop: '0.5rem', display: 'grid', gap: '0.75rem' }}>
             {items.map(i => (
-              <li key={i.id} style={{ display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '0.5rem' }}>
+              <li key={i.id} style={{ display: 'grid', gridTemplateColumns: '64px 1fr auto', alignItems: 'center', gap: '0.5rem' }}>
+                {/* Thumbnail */}
+                {i.imageUrl ? (
+                  <img src={i.imageUrl} alt={i.name} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} />
+                ) : (
+                  <div style={{ width: 64, height: 64, borderRadius: 8, background: 'rgba(0,0,0,0.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#666' }}>
+                    No img
+                  </div>
+                )}
                 <div>
                   <div style={{ fontWeight: 600 }}>{i.name}</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem' }}>
