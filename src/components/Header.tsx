@@ -1,33 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
 import CartBadge from './Cart/CartBadge';
+import { useAuth } from '../context/AuthContext';
 
  type HeaderProps = { onCartClick?: () => void };
 const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
-  // Keep token in React state so UI reacts immediately when it changes
-  const [token, setToken] = useState<string | null>(
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null
-  );
+  const { user, logout } = useAuth();
+  const token = user?.token || null;
   const [displayName, setDisplayName] = useState<string | null>(null);
-
-  // Subscribe to storage and custom auth-changed events to stay in sync
-  useEffect(() => {
-    const updateFromStorage = () => {
-      const t = localStorage.getItem('token');
-      setToken(t);
-    };
-    // Listen to both same-tab custom event and cross-tab storage changes
-    const onAuthChanged = () => updateFromStorage();
-    window.addEventListener('auth-changed', onAuthChanged as EventListener);
-    window.addEventListener('storage', updateFromStorage);
-    // Also check once on mount in case something changed before
-    updateFromStorage();
-    return () => {
-      window.removeEventListener('auth-changed', onAuthChanged as EventListener);
-      window.removeEventListener('storage', updateFromStorage);
-    };
-  }, []);
+  const navigate = useNavigate();
 
   // Fetch a lightweight user identity to show name in header
   useEffect(() => {
@@ -67,11 +49,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
   }, [token]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    // Optionally clear any stored user info
-    localStorage.removeItem('user');
-    // Notify app about auth change
-    window.dispatchEvent(new Event('auth-changed'));
+    logout();
   };
 
   return (
@@ -88,6 +66,13 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
           <Link className="btn-secondary btn-inline" to="/">Hem</Link>
           <Link className="btn-secondary btn-inline" style={{ marginLeft: 8 }} to="/products">Produkter</Link>
           <Link className="btn-secondary btn-inline" style={{ marginLeft: 8 }} to="/checkout">Kassa</Link>
+          {user?.role === 'ADMIN' && (
+            <button
+              className="btn-secondary btn-inline"
+              style={{ marginLeft: 8 }}
+              onClick={() => navigate('/admin/analytics')}
+            >Admin Analytics</button>
+          )}
           {token ? (
             <Link className="btn-secondary btn-inline" style={{ marginLeft: 8 }} to="/profile">Profil</Link>
           ) : null}

@@ -16,42 +16,51 @@ import { CartProvider } from './context/CartContext';
 import Cart from './components/Cart/Cart';
 import Login from './components/Login/Login';
 import Register from './components/Register';
+import { AuthProvider } from './context/AuthContext';
+import AdminAnalytics from './features/admin/AdminAnalytics';
+import NotAuthorized from './components/NotAuthorized';
 
 function App() {
     const [cartOpen, setCartOpen] = useState(false);
 
     return (
-        <CartProvider>
-            <main className="container" role="main">
-                <Router>
-                    <Header onCartClick={() => setCartOpen(true)} />
+        <AuthProvider>
+            <CartProvider>
+                <main className="container" role="main">
+                    <Router>
+                        <Header onCartClick={() => setCartOpen(true)} />
 
-                    <Cart open={cartOpen} onClose={() => setCartOpen(false)} />
+                        <Cart open={cartOpen} onClose={() => setCartOpen(false)} />
 
-                    <Routes>
-                        <Route path="/" element={<Home />} />
+                        <Routes>
+                            <Route path="/" element={<Home />} />
 
-                        {/* Auth routes */}
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
+                            {/* Auth routes */}
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/register" element={<Register />} />
+                            <Route path="/not-authorized" element={<NotAuthorized />} />
 
-                        {/* Produkt-routes för kommande Product Service-integration */}
-                        <Route path="/products" element={<ProductList />} />
-                        <Route path="/products/:id" element={<ProductDetails />} />
-                        <Route path="/admin/products/new" element={<ProductForm />} />
-                        <Route path="/checkout" element={<CheckoutPage />} />
-                        <Route path="/orders" element={<OrdersPage />} />
-                        <Route path="/profile" element={<UserProfile />} />
-                    </Routes>
+                            {/* Produkt-routes för kommande Product Service-integration */}
+                            <Route path="/products" element={<ProductList />} />
+                            <Route path="/products/:id" element={<ProductDetails />} />
+                            <Route path="/admin/products/new" element={<ProductForm />} />
+                            <Route path="/checkout" element={<CheckoutPage />} />
+                            <Route path="/orders" element={<OrdersPage />} />
+                            <Route path="/profile" element={<UserProfile />} />
 
-                    {/* Background visual layers (purely decorative) */}
-                    <div className="bg-gradient" aria-hidden="true" />
-                    <div className="particle-field" aria-hidden="true" />
-                    <div className="neon-bottom-waves" aria-hidden="true" />
-                    <Footer />
-                </Router>
-            </main>
-        </CartProvider>
+                            {/* Admin */}
+                            <Route path="/admin/analytics" element={<AdminAnalytics />} />
+                        </Routes>
+
+                        {/* Background visual layers (purely decorative) */}
+                        <div className="bg-gradient" aria-hidden="true" />
+                        <div className="particle-field" aria-hidden="true" />
+                        <div className="neon-bottom-waves" aria-hidden="true" />
+                        <Footer />
+                    </Router>
+                </main>
+            </CartProvider>
+        </AuthProvider>
     );
 }
 

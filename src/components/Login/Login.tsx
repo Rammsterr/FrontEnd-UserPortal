@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import '../../Authform.css';
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
+import { useAuth } from '../../context/AuthContext';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+    const { setUser } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -27,7 +30,19 @@ const Login = () => {
                 }
                 // Spara token
                 localStorage.setItem('token', token);
-                // Spara användarinfo om den finns
+
+                // Dekoda JWT och spara i authContext
+                try {
+                    const decoded: any = jwtDecode(token);
+                    const role = decoded?.role;
+                    const emailFromToken = decoded?.email || decoded?.sub || email;
+                    setUser({ token, email: emailFromToken, role });
+                } catch {
+                    // Om dekodning misslyckas, lagra åtminstone token
+                    setUser({ token });
+                }
+
+                // Spara användarinfo om den finns (från svaret)
                 try {
                     const userInfo = data.user || {
                         firstName: data.firstName,
@@ -38,6 +53,7 @@ const Login = () => {
                         localStorage.setItem('user', JSON.stringify(userInfo));
                     }
                 } catch {}
+
                 // Signalera att auth-state har ändrats
                 window.dispatchEvent(new Event('auth-changed'));
                 // Redirect to home after successful login
