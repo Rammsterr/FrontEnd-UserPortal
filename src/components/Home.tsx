@@ -90,7 +90,7 @@ const Home: React.FC = () => {
               const img = getProductPrimaryImage(p);
               const imgUrl = img ? resolveImageUrl(img) : undefined;
               return (
-                <article key={p.id} className="surface-light product-card" style={{ display: 'flex', flexDirection: 'column' }}>
+                <article key={p.id} className="product-card" style={{ display: 'flex', flexDirection: 'column' }}>
                   <div className="product-card__image" style={{ aspectRatio: '4 / 3', width: '100%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {imgUrl ? (
                       <img src={imgUrl} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
