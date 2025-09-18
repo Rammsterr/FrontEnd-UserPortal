@@ -455,7 +455,17 @@ section, .section { margin-block: 1.25rem; }
 body.dark-theme {
     background: #0f1115 !important;
     color: #eaeaea !important;
+    /* Ensure components using CSS vars pick correct surfaces/text in dark mode */
+    --card-bg: var(--dark-card-bg);
 }
+
+/* Links: inherit text color by default for consistent contrast */
+a { color: inherit; }
+a:visited { color: inherit; }
+a:hover { color: inherit; opacity: 0.9; }
+
+/* Improve general text visibility inside cards in dark mode */
+body.dark-theme .card, body.dark-theme [style*="var(--card-bg"] { color: #eaeaea; }
 
 /* Inputs & form fields in dark */
 body.dark-theme input,

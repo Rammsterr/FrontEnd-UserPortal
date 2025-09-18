@@ -34,6 +34,16 @@ function formatNumber(n: any): string {
   return num.toLocaleString('sv-SE');
 }
 
+function formatCurrencySEK(n: any): string {
+  const num = typeof n === 'number' ? n : Number(n);
+  if (!isFinite(num)) return String(n);
+  try {
+    return num.toLocaleString('sv-SE', { style: 'currency', currency: 'SEK', maximumFractionDigits: 0 });
+  } catch {
+    return `${formatNumber(num)} SEK`;
+  }
+}
+
 const AdminAnalytics: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -125,12 +135,15 @@ const AdminAnalytics: React.FC = () => {
           {/* KPI grid (if any candidates recognized) */}
           {kpis.length > 0 && (
             <div style={gridStyle}>
-              {kpis.map(([label, value]) => (
-                <div key={label} style={cardStyle}>
-                  <div style={labelStyle}>{label}</div>
-                  <div style={kpiValueStyle}>{formatNumber(value)}</div>
-                </div>
-              ))}
+              {kpis.map(([label, value]) => {
+                const display = label === 'Totala intäkter' ? formatCurrencySEK(value) : formatNumber(value);
+                return (
+                  <div key={label} style={cardStyle}>
+                    <div style={labelStyle}>{label}</div>
+                    <div style={kpiValueStyle}>{display}</div>
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -141,12 +154,25 @@ const AdminAnalytics: React.FC = () => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.5rem' }}>
                 {Object.entries(analytics as Record<string, any>).map(([key, val]) => {
                   const isPrimitive = val == null || ['string','number','boolean'].includes(typeof val);
+                  let display: string;
+
+                  if (isPrimitive) {
+                    display = String(val);
+                  } else if (Array.isArray(val)) {
+                    display = `${val.length} objekt`;
+                  } else if (key === 'topProduct' && typeof val === 'object' && val) {
+                    const v: any = val;
+                    const name = v.name || v.productName || v.title || v.product?.name || v.product?.title || v.sku || v.id;
+                    const extra = v.sku && name !== v.sku ? ` (SKU: ${v.sku})` : '';
+                    display = name ? `${name}${extra}` : '[produkt]';
+                  } else {
+                    display = 'objekt';
+                  }
+
                   return (
                     <div key={key} style={{ border: '1px dashed rgba(0,0,0,0.08)', borderRadius: 10, padding: '0.75rem' }}>
                       <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>{key}</div>
-                      <div style={{ fontWeight: 600, marginTop: 2 }}>
-                        {isPrimitive ? String(val) : Array.isArray(val) ? `${val.length} objekt` : 'objekt'}
-                      </div>
+                      <div style={{ fontWeight: 600, marginTop: 2 }}>{display}</div>
                     </div>
                   );
                 })}
