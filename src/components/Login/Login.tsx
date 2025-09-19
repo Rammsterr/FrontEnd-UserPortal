@@ -14,7 +14,7 @@ const Login = () => {
         e.preventDefault();
 
         try {
-            const response = await fetch('https://userservice.drillbi.se/auth/login', {
+            const response = await fetch('/api/users/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, username: email, password }),

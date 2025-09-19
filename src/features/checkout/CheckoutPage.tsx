@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import formatPriceSEK from '../../utils/formatPrice';
-import { purchase, createOrder } from '../orders/orderService';
+import { purchase } from '../orders/orderService';
 
 // Kassa-sida: visar sammanfattning och låter användaren skicka order till backend
 const CheckoutPage: React.FC = () => {
@@ -30,23 +30,14 @@ const CheckoutPage: React.FC = () => {
     }
     setSubmitting(true);
     try {
-      if (items.length > 1) {
-        // Flerprodukter: använd legacy createOrder med items[]
-        const payload = { items: items.map(i => ({ productId: i.id, quantity: i.qty })) };
-        const res = await createOrder(payload);
-        const msg = `Tack för ditt köp! Order skapad med ID: ${res.id}`;
-        setSuccessMsg(msg);
-      } else {
-        // Enstaka produkt: använd nya purchase-endpointen som kräver exakt { productId, quantity }
-        const item = items[0];
-        const payload = { productId: item.id, quantity: item.qty };
-        const res = await purchase(payload);
-        const ordNum = res.orderNumber ? ` (Ordernummer: ${res.orderNumber})` : '';
-        const msg = `Tack för ditt köp! Order-ID: ${res.orderId}${ordNum}`;
-        setSuccessMsg(msg);
-      }
+      // Skicka hela kundvagnen i ett enda köp-anrop enligt nya API-formatet
+      const payload = { items: items.map(i => ({ productId: i.id, quantity: i.qty })) };
+      const res = await purchase(payload);
+      const ordNum = res.orderNumber ? ` (Ordernummer: ${res.orderNumber})` : '';
+      const msg = `Tack för ditt köp! Order-ID: ${res.orderId}${ordNum}`;
+      setSuccessMsg(msg);
       clearCart();
-      // Redirect to order history after short delay
+      // Redirect to order history efter kort fördröjning
       setTimeout(() => { window.location.hash = '/orders'; }, 800);
     } catch (e: any) {
       setError(e?.message || 'Kunde inte lägga ordern.');

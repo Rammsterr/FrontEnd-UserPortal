@@ -30,7 +30,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
         }
       } catch { /* ignore parse errors */ }
       try {
-        const res = await fetch('https://userservice.drillbi.se/me', {
+        const res = await fetch('/api/users/me', {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (!res.ok) { /* keep any prefilled name, but ensure we don't show stale */ return; }

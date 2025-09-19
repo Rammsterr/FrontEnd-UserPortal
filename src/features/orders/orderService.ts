@@ -1,7 +1,7 @@
 // Order Service client
 // Assumptions:
 // - Base URL configured via REACT_APP_ORDER_API_BASE_URL, fallback to https://orderservice.drillbi.se
-// - Purchase endpoint: POST /api/orders/purchase (JWT) expects { productId, quantity }
+// - Purchase endpoint: POST /api/orders/purchase (JWT) expects { items: [{ productId, quantity }, ...] }
 // - Legacy create order endpoint remains for backward compatibility
 // - History: GET /api/orders (or /api/orders/history fallback)
 
@@ -9,8 +9,8 @@ export interface OrderItemRequest { productId: string; quantity: number; }
 export interface CreateOrderRequest { items: OrderItemRequest[]; }
 export interface CreateOrderResponse { id: string; status?: string; totalAmount?: number; currency?: string; message?: string; }
 
-// Purchase request must match backend exactly
-export interface PurchaseRequest { productId: string; quantity: number }
+// Purchase request must match backend exactly (new format)
+export interface PurchaseRequest { items: OrderItemRequest[] }
 export interface PurchaseResponse { orderId: string; orderNumber?: string; totalAmount?: number }
 
 export interface OrderHistoryItem {

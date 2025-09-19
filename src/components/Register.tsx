@@ -20,7 +20,7 @@ const Register = () => {
         }
 
         try {
-            const response = await fetch('https://userservice.drillbi.se/auth/register', {
+            const response = await fetch('/api/users/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, username: email, password, firstName, lastName }),

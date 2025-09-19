@@ -44,7 +44,7 @@ const UserProfile: React.FC = () => {
         }
         try {
             setLoading(true);
-            const res = await fetch('https://userservice.drillbi.se/me', {
+            const res = await fetch('/api/users/me', {
                 method: 'GET',
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -130,7 +130,7 @@ const UserProfile: React.FC = () => {
         try {
             setSaving(true);
             setMessage(null);
-            const res = await fetch('https://userservice.drillbi.se/me/settings', {
+            const res = await fetch('/api/users/me/settings', {
                 method: 'PUT',
                 headers: {
                     Authorization: `Bearer ${token}`,
