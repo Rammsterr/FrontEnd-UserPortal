@@ -61,7 +61,7 @@ const AdminAnalytics: React.FC = () => {
 
     const controller = new AbortController();
 
-    fetch(`${process.env.REACT_APP_ORDER_API_BASE_URL || 'https://orderservice.drillbi.se'}/analytics/monthly-kpis`, {
+    fetch(`${process.env.REACT_APP_ORDER_API_BASE_URL || 'https://orderservice.drillbi.se'}/api/orders/analytics/monthly-kpis`, {
       headers: { Authorization: `Bearer ${user.token}` },
       signal: controller.signal,
     })
